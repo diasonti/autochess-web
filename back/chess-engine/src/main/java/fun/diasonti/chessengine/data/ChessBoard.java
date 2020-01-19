@@ -34,4 +34,21 @@ public class ChessBoard {
         return ~getAllPieces();
     }
 
+    public ChessBoard getCopy() {
+        final ChessBoard copy = new ChessBoard();
+        copy.whiteKings = this.whiteKings;
+        copy.whiteQueens = this.whiteQueens;
+        copy.whiteRooks = this.whiteRooks;
+        copy.whiteBishops = this.whiteBishops;
+        copy.whiteKnights = this.whiteKnights;
+        copy.whitePawns = this.whitePawns;
+        copy.blackKings = this.blackKings;
+        copy.blackQueens = this.blackQueens;
+        copy.blackRooks = this.blackRooks;
+        copy.blackBishops = this.blackBishops;
+        copy.blackKnights = this.blackKnights;
+        copy.blackPawns = this.blackPawns;
+        return copy;
+    }
+
 }

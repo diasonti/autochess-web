@@ -47,6 +47,54 @@ public class MoveEngine {
             0x1020408000000000L, 0x2040800000000000L, 0x4080000000000000L, 0x8000000000000000L
     };
 
+    public ChessBoard makeMove(ChessBoard board, Move move) {
+        final ChessBoard copy = board.getCopy();
+        copy.whiteKings &= ~move.to;
+        copy.whiteKings &= ~move.to;
+        copy.whiteQueens &= ~move.to;
+        copy.whiteRooks &= ~move.to;
+        copy.whiteBishops &= ~move.to;
+        copy.whiteKnights &= ~move.to;
+        copy.whitePawns &= ~move.to;
+        copy.blackKings &= ~move.to;
+        copy.blackQueens &= ~move.to;
+        copy.blackRooks &= ~move.to;
+        copy.blackBishops &= ~move.to;
+        copy.blackKnights &= ~move.to;
+        copy.blackPawns &= ~move.to;
+
+        final int offsetFrom = Long.numberOfTrailingZeros(move.from);
+        final int offsetTo = Long.numberOfTrailingZeros(move.to);
+        copy.whiteKings   |= ((move.from & copy.whiteKings)   >>> offsetFrom) << offsetTo;
+        copy.whiteKings   |= ((move.from & copy.whiteKings)   >>> offsetFrom) << offsetTo;
+        copy.whiteQueens  |= ((move.from & copy.whiteQueens)  >>> offsetFrom) << offsetTo;
+        copy.whiteRooks   |= ((move.from & copy.whiteRooks)   >>> offsetFrom) << offsetTo;
+        copy.whiteBishops |= ((move.from & copy.whiteBishops) >>> offsetFrom) << offsetTo;
+        copy.whiteKnights |= ((move.from & copy.whiteKnights) >>> offsetFrom) << offsetTo;
+        copy.whitePawns   |= ((move.from & copy.whitePawns)   >>> offsetFrom) << offsetTo;
+        copy.blackKings   |= ((move.from & copy.blackKings)   >>> offsetFrom) << offsetTo;
+        copy.blackQueens  |= ((move.from & copy.blackQueens)  >>> offsetFrom) << offsetTo;
+        copy.blackRooks   |= ((move.from & copy.blackRooks)   >>> offsetFrom) << offsetTo;
+        copy.blackBishops |= ((move.from & copy.blackBishops) >>> offsetFrom) << offsetTo;
+        copy.blackKnights |= ((move.from & copy.blackKnights) >>> offsetFrom) << offsetTo;
+        copy.blackPawns   |= ((move.from & copy.blackPawns)   >>> offsetFrom) << offsetTo;
+
+        copy.whiteKings &= ~move.from;
+        copy.whiteKings &= ~move.from;
+        copy.whiteQueens &= ~move.from;
+        copy.whiteRooks &= ~move.from;
+        copy.whiteBishops &= ~move.from;
+        copy.whiteKnights &= ~move.from;
+        copy.whitePawns &= ~move.from;
+        copy.blackKings &= ~move.from;
+        copy.blackQueens &= ~move.from;
+        copy.blackRooks &= ~move.from;
+        copy.blackBishops &= ~move.from;
+        copy.blackKnights &= ~move.from;
+        copy.blackPawns &= ~move.from;
+        return copy;
+    }
+
     public Set<Move> getAvailableMoves(ChessBoard board, Color color) {
         final Set<Move> moves = new HashSet<>();
         if (color == Color.WHITE) {

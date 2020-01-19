@@ -18,6 +18,24 @@ class MoveEngineTest {
     private final MoveEngine moveEngine = new MoveEngine();
 
     @Test
+    void makeMoveWhite() {
+        final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final ChessBoard boardAfterMove = moveEngine.makeMove(board, Move.of(1L << 57, 1L << 42));
+        final String fenAfterMove = BoardUtils.bitboardToFen(boardAfterMove);
+        assertEquals("rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR", fenAfterMove);
+    }
+
+    @Test
+    void makeMoveBlack() {
+        final String fen = "rnbqkbnr/pppp1ppp/8/4p3/8/2N5/PPPPPPPP/R1BQKBNR";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final ChessBoard boardAfterMove = moveEngine.makeMove(board, Move.of(1L << 5, 1L << 33));
+        final String fenAfterMove = BoardUtils.bitboardToFen(boardAfterMove);
+        assertEquals("rnbqk1nr/pppp1ppp/8/4p3/1b6/2N5/PPPPPPPP/R1BQKBNR", fenAfterMove);
+    }
+
+    @Test
     void getAvailableMovesWhite() {
         final String fen = "rnbq1bnr/pppppppp/8/5N2/P3P3/R7/1PPP1PPP/1NBQ1B1R";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
