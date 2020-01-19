@@ -58,7 +58,7 @@ public class MoveEngine {
             if (isAbleToPush) {
                 long from = 1 << i;
                 long to = 1 << (i - 8);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -68,7 +68,7 @@ public class MoveEngine {
             if (isAbleAttackLeft) {
                 long from = 1 << i;
                 long to = 1 << (i - 9);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -78,7 +78,7 @@ public class MoveEngine {
             if (isAbleAttackRight) {
                 long from = 1 << i;
                 long to = 1 << (i - 7);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -97,7 +97,7 @@ public class MoveEngine {
             if (isAbleToPush) {
                 long from = 1 << i;
                 long to = 1 << (i + 8);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -107,7 +107,7 @@ public class MoveEngine {
             if (isAbleAttackLeft) {
                 long from = 1 << i;
                 long to = 1 << (i + 9);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -117,7 +117,7 @@ public class MoveEngine {
             if (isAbleAttackRight) {
                 long from = 1 << i;
                 long to = 1 << (i + 7);
-                moves.add(new Move(from, to));
+                moves.add(Move.of(from, to));
             }
         }
 
@@ -187,7 +187,7 @@ public class MoveEngine {
             while (attack != 0) {
                 final long attackPosition = 1L << Long.numberOfTrailingZeros(attack);
                 attack &= ~attackPosition;
-                moves.add(new Move(position, attackPosition));
+                moves.add(Move.of(position, attackPosition));
             }
         }
         return moves;
@@ -202,56 +202,56 @@ public class MoveEngine {
                 while (tempCell >= 8) {
                     tempPosition = tempPosition >> 8;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case DOWN:
                 while (tempCell <= 55) {
                     tempPosition = tempPosition << 8;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case LEFT:
                 while (tempCell % 8 > 0) {
                     tempPosition = tempPosition >> 1;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case RIGHT:
                 while ((tempCell + 1) % 8 > 0) {
                     tempPosition = tempPosition << 1;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case UP_RIGHT:
                 while (tempCell >= 8 && (tempCell + 1) % 8 > 0) {
                     tempPosition = tempPosition >> 7;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case UP_LEFT:
                 while (tempCell >= 8 && tempCell % 8 > 0) {
                     tempPosition = tempPosition >> 9;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case DOWN_RIGHT:
                 while (tempCell <= 55 && (tempCell + 1) % 8 > 0) {
                     tempPosition = tempPosition << 9;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case DOWN_LEFT:
                 while (tempCell <= 55 && tempCell % 8 > 0) {
                     tempPosition = tempPosition << 7;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
-                    moves.add(new Move(position, tempPosition));
+                    moves.add(Move.of(position, tempPosition));
                 }
                 break;
         }
