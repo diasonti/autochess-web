@@ -1,6 +1,5 @@
 package fun.diasonti.chessengine.engine;
 
-import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Direction;
 import fun.diasonti.chessengine.data.Move;
 import org.springframework.stereotype.Service;
@@ -52,34 +51,25 @@ public class MoveEngine {
         }
         final Set<Move> moves = new HashSet<>();
 
-        final long ableToPush = (emptyCells << 8) & whitePawns;
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleToPush = ((ableToPush >>> i) & 1L) == 1L;
-            if (isAbleToPush) {
-                long from = 1 << i;
-                long to = 1 << (i - 8);
-                moves.add(Move.of(from, to));
-            }
+        long ableToPush = (emptyCells << 8) & whitePawns;
+        while (ableToPush != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToPush);
+            ableToPush &= ~position;
+            moves.add(Move.of(position, position >>> 8));
         }
 
-        final long ableToAttackLeft = (enemyPieces << 9) & whitePawns & ~FILE_MASKS[7];
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleAttackLeft = ((ableToAttackLeft >>> i) & 1L) == 1L;
-            if (isAbleAttackLeft) {
-                long from = 1 << i;
-                long to = 1 << (i - 9);
-                moves.add(Move.of(from, to));
-            }
+        long ableToAttackLeft = (enemyPieces << 9) & whitePawns & ~FILE_MASKS[7];
+        while (ableToAttackLeft != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToAttackLeft);
+            ableToAttackLeft &= ~position;
+            moves.add(Move.of(position, position >>> 9));
         }
 
-        final long ableToAttackRight = (enemyPieces << 7) & whitePawns & ~FILE_MASKS[0];
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleAttackRight = ((ableToAttackRight >>> i) & 1L) == 1L;
-            if (isAbleAttackRight) {
-                long from = 1 << i;
-                long to = 1 << (i - 7);
-                moves.add(Move.of(from, to));
-            }
+        long ableToAttackRight = (enemyPieces << 7) & whitePawns & ~FILE_MASKS[0];
+        while (ableToAttackRight != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToAttackRight);
+            ableToAttackRight &= ~position;
+            moves.add(Move.of(position, position >>> 7));
         }
 
         return moves;
@@ -91,34 +81,25 @@ public class MoveEngine {
         }
         final Set<Move> moves = new HashSet<>();
 
-        final long ableToPush = (emptyCells >>> 8) & blackPawns;
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleToPush = ((ableToPush >>> i) & 1L) == 1L;
-            if (isAbleToPush) {
-                long from = 1 << i;
-                long to = 1 << (i + 8);
-                moves.add(Move.of(from, to));
-            }
+        long ableToPush = (emptyCells >>> 8) & blackPawns;
+        while (ableToPush != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToPush);
+            ableToPush &= ~position;
+            moves.add(Move.of(position, position << 8));
         }
 
-        final long ableToAttackLeft = (enemyPieces >>> 9) & blackPawns & ~FILE_MASKS[0];
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleAttackLeft = ((ableToAttackLeft >>> i) & 1L) == 1L;
-            if (isAbleAttackLeft) {
-                long from = 1 << i;
-                long to = 1 << (i + 9);
-                moves.add(Move.of(from, to));
-            }
+        long ableToAttackLeft = (enemyPieces >>> 9) & blackPawns & ~FILE_MASKS[0];
+        while (ableToAttackLeft != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToAttackLeft);
+            ableToAttackLeft &= ~position;
+            moves.add(Move.of(position, position << 9));
         }
 
-        final long ableToAttackRight = (enemyPieces >>> 7) & blackPawns & ~FILE_MASKS[7];
-        for (int i = 0; i < ChessBoard.SIZE; i++) {
-            boolean isAbleAttackRight = ((ableToAttackRight >>> i) & 1L) == 1L;
-            if (isAbleAttackRight) {
-                long from = 1 << i;
-                long to = 1 << (i + 7);
-                moves.add(Move.of(from, to));
-            }
+        long ableToAttackRight = (enemyPieces >>> 7) & blackPawns & ~FILE_MASKS[7];
+        while (ableToAttackRight != 0) {
+            final long position = 1L << Long.numberOfTrailingZeros(ableToAttackRight);
+            ableToAttackRight &= ~position;
+            moves.add(Move.of(position, position << 7));
         }
 
         return moves;
