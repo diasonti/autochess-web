@@ -141,41 +141,83 @@ public class MoveEngine {
         return moves;
     }
 
+    public Set<Move> getBishopMoves(long bishops, long emptyCells, long enemyPieces) {
+        final Set<Move> moves = new HashSet<>();
+        while (bishops != 0) {
+            final long position = (1L << Long.numberOfTrailingZeros(bishops));
+            bishops &= ~position; // Remove the 'position' bishop from the 'bishops' bitboard
+            final List<Move> movesUpRight = getRayMoves(position, Direction.UP_RIGHT);
+            moves.addAll(filterRayMoves(movesUpRight, emptyCells, enemyPieces));
+            final List<Move> movesUpLeft = getRayMoves(position, Direction.UP_LEFT);
+            moves.addAll(filterRayMoves(movesUpLeft, emptyCells, enemyPieces));
+            final List<Move> movesDownRight = getRayMoves(position, Direction.DOWN_RIGHT);
+            moves.addAll(filterRayMoves(movesDownRight, emptyCells, enemyPieces));
+            final List<Move> movesDownLeft = getRayMoves(position, Direction.DOWN_LEFT);
+            moves.addAll(filterRayMoves(movesDownLeft, emptyCells, enemyPieces));
+        }
+        return moves;
+    }
+
     public List<Move> getRayMoves(long position, Direction direction) {
         final List<Move> moves = new LinkedList<>();
         long tempPosition = position;
+        int tempCell = Long.numberOfTrailingZeros(tempPosition);
         switch (direction) {
             case UP:
-                while (Long.numberOfTrailingZeros(tempPosition) >= 8) {
+                while (tempCell >= 8) {
                     tempPosition = tempPosition >> 8;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(new Move(position, tempPosition));
                 }
                 break;
             case DOWN:
-                while (Long.numberOfTrailingZeros(tempPosition) <= 55) {
+                while (tempCell <= 55) {
                     tempPosition = tempPosition << 8;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(new Move(position, tempPosition));
                 }
                 break;
             case LEFT:
-                while (Long.numberOfTrailingZeros(tempPosition) % 8 > 0) {
+                while (tempCell % 8 > 0) {
                     tempPosition = tempPosition >> 1;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(new Move(position, tempPosition));
                 }
                 break;
             case RIGHT:
-                while ((Long.numberOfTrailingZeros(tempPosition) + 1) % 8 > 0) {
+                while ((tempCell + 1) % 8 > 0) {
                     tempPosition = tempPosition << 1;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(new Move(position, tempPosition));
                 }
                 break;
             case UP_RIGHT:
+                while (tempCell >= 8 && (tempCell + 1) % 8 > 0) {
+                    tempPosition = tempPosition >> 7;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
+                    moves.add(new Move(position, tempPosition));
+                }
                 break;
             case UP_LEFT:
+                while (tempCell >= 8 && tempCell % 8 > 0) {
+                    tempPosition = tempPosition >> 9;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
+                    moves.add(new Move(position, tempPosition));
+                }
                 break;
             case DOWN_RIGHT:
+                while (tempCell <= 55 && (tempCell + 1) % 8 > 0) {
+                    tempPosition = tempPosition << 9;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
+                    moves.add(new Move(position, tempPosition));
+                }
                 break;
             case DOWN_LEFT:
+                while (tempCell <= 55 && tempCell % 8 > 0) {
+                    tempPosition = tempPosition << 7;
+                    tempCell = Long.numberOfTrailingZeros(tempPosition);
+                    moves.add(new Move(position, tempPosition));
+                }
                 break;
         }
         return moves;

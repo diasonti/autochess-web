@@ -1,6 +1,5 @@
 package fun.diasonti.chessengine.data;
 
-import java.math.BigInteger;
 import java.util.Objects;
 
 public class Move {
@@ -30,8 +29,8 @@ public class Move {
     @Override
     public String toString() {
         return "Move{" +
-                "from=" + String.format("%064d", new BigInteger(Long.toBinaryString(from))) +
-                ", to=" + String.format("%064d", new BigInteger(Long.toBinaryString(to))) +
+                "from=" + Long.numberOfTrailingZeros(from) +
+                ", to=" + Long.numberOfTrailingZeros(to) +
                 '}';
     }
 }

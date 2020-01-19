@@ -97,6 +97,30 @@ class MoveEngineTest {
         assertEquals(new Move(1L << 52, 1L << 53), movesRight.get(0));
         assertEquals(new Move(1L << 52, 1L << 54), movesRight.get(1));
         assertEquals(new Move(1L << 52, 1L << 55), movesRight.get(2));
+
+        final List<Move> movesUpRight = moveEngine.getRayMoves(1L << 52, Direction.UP_RIGHT);
+        assertEquals(3, movesUpRight.size());
+        assertEquals(new Move(1L << 52, 1L << 45), movesUpRight.get(0));
+        assertEquals(new Move(1L << 52, 1L << 38), movesUpRight.get(1));
+        assertEquals(new Move(1L << 52, 1L << 31), movesUpRight.get(2));
+
+        final List<Move> movesUpLeft = moveEngine.getRayMoves(1L << 29, Direction.UP_LEFT);
+        assertEquals(3, movesUpLeft.size());
+        assertEquals(new Move(1L << 29, 1L << 20), movesUpLeft.get(0));
+        assertEquals(new Move(1L << 29, 1L << 11), movesUpLeft.get(1));
+        assertEquals(new Move(1L << 29, 1L << 2), movesUpLeft.get(2));
+
+        final List<Move> movesDownRight = moveEngine.getRayMoves(1L << 12, Direction.DOWN_RIGHT);
+        assertEquals(3, movesDownRight.size());
+        assertEquals(new Move(1L << 12, 1L << 21), movesDownRight.get(0));
+        assertEquals(new Move(1L << 12, 1L << 30), movesDownRight.get(1));
+        assertEquals(new Move(1L << 12, 1L << 39), movesDownRight.get(2));
+
+        final List<Move> movesDownLeft = moveEngine.getRayMoves(1L << 39, Direction.DOWN_LEFT);
+        assertEquals(3, movesDownLeft.size());
+        assertEquals(new Move(1L << 39, 1L << 46), movesDownLeft.get(0));
+        assertEquals(new Move(1L << 39, 1L << 53), movesDownLeft.get(1));
+        assertEquals(new Move(1L << 39, 1L << 60), movesDownLeft.get(2));
     }
 
     @Test
@@ -112,5 +136,20 @@ class MoveEngineTest {
         assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 42, 1L << 58))));
         assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 42, 1L << 41))));
         assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 42, 1L << 40))));
+    }
+
+    @Test
+    void getBishopMoves() {
+        final String fen = "8/7p/6B1/6NQ/1N2p3/2P1N3/P2B4/BPp1N3";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final Set<Move> moves = moveEngine.getBishopMoves(board.whiteBishops, board.getEmptyCells(), board.getBlackPieces());
+        assertEquals(7, moves.size());
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 22, 1L << 15))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 22, 1L << 13))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 22, 1L << 4))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 22, 1L << 29))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 22, 1L << 36))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 56, 1L << 49))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 51, 1L << 58))));
     }
 }
