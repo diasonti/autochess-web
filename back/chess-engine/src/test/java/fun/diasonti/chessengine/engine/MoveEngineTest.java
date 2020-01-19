@@ -171,4 +171,24 @@ class MoveEngineTest {
         assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 42, 1L << 51))));
         assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 42, 1L << 60))));
     }
+
+    @Test
+    void getKnightMoves() {
+        final String fen = "1p2p3/2p4p/N4N2/2p4p/1p2p1P1/1p6/2P5/N7";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final Set<Move> moves = moveEngine.getKnightMoves(board.whiteKnights, board.getEmptyCells(), board.getBlackPieces());
+        assertEquals(12, moves.size());
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 4))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 6))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 11))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 15))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 31))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 27))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 21, 1L << 36))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 16, 1L << 1))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 16, 1L << 10))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 16, 1L << 26))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 16, 1L << 33))));
+        assertTrue(moves.stream().anyMatch(m -> m.equals(new Move(1L << 56, 1L << 41))));
+    }
 }

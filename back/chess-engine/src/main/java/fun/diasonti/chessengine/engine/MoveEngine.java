@@ -165,6 +165,34 @@ public class MoveEngine {
         return moves;
     }
 
+    public Set<Move> getKnightMoves(long knights, long emptyCells, long enemyPieces) {
+        final Set<Move> moves = new HashSet<>();
+        while (knights != 0) {
+            final long position = (1L << Long.numberOfTrailingZeros(knights));
+            knights &= ~position; // Remove the 'position' knight from the 'knights' bitboard
+            long attack = 0L;
+            attack |= (position & ~(FILE_MASKS[0] | FILE_MASKS[1] | RANK_MASKS[7])) >>> 10; // Left-top
+            attack |= (position & ~(FILE_MASKS[0] | FILE_MASKS[1] | RANK_MASKS[0])) <<  6;  // Left-bottom
+
+            attack |= (position & ~(FILE_MASKS[6] | FILE_MASKS[7] | RANK_MASKS[7])) >>> 6;  // Right-top
+            attack |= (position & ~(FILE_MASKS[6] | FILE_MASKS[7] | RANK_MASKS[0])) <<  10; // Right-bottom
+
+            attack |= (position & ~(RANK_MASKS[6] | RANK_MASKS[7] | FILE_MASKS[0])) >>> 17; // Top-left
+            attack |= (position & ~(RANK_MASKS[6] | RANK_MASKS[7] | FILE_MASKS[7])) >>> 15; // Top-right
+
+            attack |= (position & ~(RANK_MASKS[0] | RANK_MASKS[1] | FILE_MASKS[0])) <<  15; // Bottom-left
+            attack |= (position & ~(RANK_MASKS[0] | RANK_MASKS[1] | FILE_MASKS[7])) <<  17; // Bottom-right
+
+            attack &= (emptyCells | enemyPieces);
+            while (attack != 0) {
+                final long attackPosition = 1L << Long.numberOfTrailingZeros(attack);
+                attack &= ~attackPosition;
+                moves.add(new Move(position, attackPosition));
+            }
+        }
+        return moves;
+    }
+
     public List<Move> getRayMoves(long position, Direction direction) {
         final List<Move> moves = new LinkedList<>();
         long tempPosition = position;

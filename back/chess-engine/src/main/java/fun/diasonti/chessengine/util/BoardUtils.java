@@ -147,6 +147,9 @@ public final class BoardUtils {
                 empty++;
             }
         }
+        if (empty > 0) {
+            fen += empty;
+        }
         return fen;
     }
 
