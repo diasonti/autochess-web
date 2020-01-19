@@ -1,12 +1,11 @@
 package fun.diasonti.chessengine.engine;
 
 import fun.diasonti.chessengine.data.ChessBoard;
+import fun.diasonti.chessengine.data.Direction;
 import fun.diasonti.chessengine.data.Move;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MoveEngine {
@@ -123,5 +122,77 @@ public class MoveEngine {
         }
 
         return moves;
+    }
+
+    public Set<Move> getRookMoves(long rooks, long emptyCells, long enemyPieces) {
+        final Set<Move> moves = new HashSet<>();
+        while (rooks != 0) {
+            final long position = (1L << Long.numberOfTrailingZeros(rooks));
+            rooks &= ~position; // Remove the 'position' rook from the 'rooks' bitboard
+            final List<Move> movesUp = getRayMoves(position, Direction.UP);
+            moves.addAll(filterRayMoves(movesUp, emptyCells, enemyPieces));
+            final List<Move> movesDown = getRayMoves(position, Direction.DOWN);
+            moves.addAll(filterRayMoves(movesDown, emptyCells, enemyPieces));
+            final List<Move> movesLeft = getRayMoves(position, Direction.LEFT);
+            moves.addAll(filterRayMoves(movesLeft, emptyCells, enemyPieces));
+            final List<Move> movesRight = getRayMoves(position, Direction.RIGHT);
+            moves.addAll(filterRayMoves(movesRight, emptyCells, enemyPieces));
+        }
+        return moves;
+    }
+
+    public List<Move> getRayMoves(long position, Direction direction) {
+        final List<Move> moves = new LinkedList<>();
+        long tempPosition = position;
+        switch (direction) {
+            case UP:
+                while (Long.numberOfTrailingZeros(tempPosition) >= 8) {
+                    tempPosition = tempPosition >> 8;
+                    moves.add(new Move(position, tempPosition));
+                }
+                break;
+            case DOWN:
+                while (Long.numberOfTrailingZeros(tempPosition) <= 55) {
+                    tempPosition = tempPosition << 8;
+                    moves.add(new Move(position, tempPosition));
+                }
+                break;
+            case LEFT:
+                while (Long.numberOfTrailingZeros(tempPosition) % 8 > 0) {
+                    tempPosition = tempPosition >> 1;
+                    moves.add(new Move(position, tempPosition));
+                }
+                break;
+            case RIGHT:
+                while ((Long.numberOfTrailingZeros(tempPosition) + 1) % 8 > 0) {
+                    tempPosition = tempPosition << 1;
+                    moves.add(new Move(position, tempPosition));
+                }
+                break;
+            case UP_RIGHT:
+                break;
+            case UP_LEFT:
+                break;
+            case DOWN_RIGHT:
+                break;
+            case DOWN_LEFT:
+                break;
+        }
+        return moves;
+    }
+
+    public Set<Move> filterRayMoves(List<Move> allMoves, long emptyCells, long enemyPieces) {
+        final Set<Move> filteredMoves = new HashSet<>();
+        for (Move move : allMoves) {
+            if ((move.to & emptyCells) != 0) {
+                filteredMoves.add(move);
+            } else if ((move.to & enemyPieces) != 0) {
+                filteredMoves.add(move);
+                break;
+            } else {
+                break;
+            }
+        }
+        return filteredMoves;
     }
 }
