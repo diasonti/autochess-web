@@ -158,6 +158,13 @@ public class MoveEngine {
         return moves;
     }
 
+    public Set<Move> getQueenMoves(long queens, long emptyCells, long enemyPieces) {
+        final Set<Move> moves = new HashSet<>();
+        moves.addAll(getRookMoves(queens, emptyCells, enemyPieces));
+        moves.addAll(getBishopMoves(queens, emptyCells, enemyPieces));
+        return moves;
+    }
+
     public List<Move> getRayMoves(long position, Direction direction) {
         final List<Move> moves = new LinkedList<>();
         long tempPosition = position;
