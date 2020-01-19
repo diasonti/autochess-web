@@ -85,4 +85,43 @@ public class MoveEngine {
 
         return moves;
     }
+
+    public Set<Move> getBlackPawnMoves(long blackPawns, long emptyCells, long enemyPieces) {
+        if (blackPawns == 0) {
+            return Collections.emptySet();
+        }
+        final Set<Move> moves = new HashSet<>();
+
+        final long ableToPush = (emptyCells >>> 8) & blackPawns;
+        for (int i = 0; i < ChessBoard.SIZE; i++) {
+            boolean isAbleToPush = ((ableToPush >>> i) & 1L) == 1L;
+            if (isAbleToPush) {
+                long from = 1 << i;
+                long to = 1 << (i + 8);
+                moves.add(new Move(from, to));
+            }
+        }
+
+        final long ableToAttackLeft = (enemyPieces >>> 9) & blackPawns & ~FILE_MASKS[0];
+        for (int i = 0; i < ChessBoard.SIZE; i++) {
+            boolean isAbleAttackLeft = ((ableToAttackLeft >>> i) & 1L) == 1L;
+            if (isAbleAttackLeft) {
+                long from = 1 << i;
+                long to = 1 << (i + 9);
+                moves.add(new Move(from, to));
+            }
+        }
+
+        final long ableToAttackRight = (enemyPieces >>> 7) & blackPawns & ~FILE_MASKS[7];
+        for (int i = 0; i < ChessBoard.SIZE; i++) {
+            boolean isAbleAttackRight = ((ableToAttackRight >>> i) & 1L) == 1L;
+            if (isAbleAttackRight) {
+                long from = 1 << i;
+                long to = 1 << (i + 7);
+                moves.add(new Move(from, to));
+            }
+        }
+
+        return moves;
+    }
 }
