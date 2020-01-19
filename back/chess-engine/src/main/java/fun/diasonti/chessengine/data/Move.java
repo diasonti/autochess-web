@@ -1,23 +1,25 @@
 package fun.diasonti.chessengine.data;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class Move {
 
-    private static final Map<Long, Map<Long, Move>> MOVE_CACHE = new HashMap<>();
-
     public final long from;
     public final long to;
+    public int score;
 
     private Move(long from, long to) {
         this.from = from;
         this.to = to;
+        this.score = 0;
     }
 
     public static Move of(long from, long to) {
-        return MOVE_CACHE.computeIfAbsent(from, key -> new HashMap<>()).computeIfAbsent(to, key -> new Move(from, to));
+        return new Move(from, to);
+    }
+
+    public static Move empty() {
+        return new Move(0L, 0L);
     }
 
     @Override
