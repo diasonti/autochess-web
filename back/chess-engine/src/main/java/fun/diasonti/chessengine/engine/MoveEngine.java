@@ -1,5 +1,7 @@
 package fun.diasonti.chessengine.engine;
 
+import fun.diasonti.chessengine.data.ChessBoard;
+import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Direction;
 import fun.diasonti.chessengine.data.Move;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,24 @@ public class MoveEngine {
             0x102040810204080L, 0x204081020408000L, 0x408102040800000L, 0x810204080000000L,
             0x1020408000000000L, 0x2040800000000000L, 0x4080000000000000L, 0x8000000000000000L
     };
+
+    public Set<Move> getAvailableMoves(ChessBoard board, Color color) {
+        final Set<Move> moves = new HashSet<>();
+        if (color == Color.WHITE) {
+            moves.addAll(getWhitePawnMoves(board.whitePawns, board.getEmptyCells(), board.getBlackPieces()));
+            moves.addAll(getKnightMoves(board.whiteKnights, board.getEmptyCells(), board.getBlackPieces()));
+            moves.addAll(getBishopMoves(board.whiteBishops, board.getEmptyCells(), board.getBlackPieces()));
+            moves.addAll(getRookMoves(board.whiteRooks, board.getEmptyCells(), board.getBlackPieces()));
+            moves.addAll(getQueenMoves(board.whiteQueens, board.getEmptyCells(), board.getBlackPieces()));
+        } else if (color == Color.BLACK) {
+            moves.addAll(getBlackPawnMoves(board.blackPawns, board.getEmptyCells(), board.getWhitePieces()));
+            moves.addAll(getKnightMoves(board.blackKnights, board.getEmptyCells(), board.getWhitePieces()));
+            moves.addAll(getBishopMoves(board.blackBishops, board.getEmptyCells(), board.getWhitePieces()));
+            moves.addAll(getRookMoves(board.blackRooks, board.getEmptyCells(), board.getWhitePieces()));
+            moves.addAll(getQueenMoves(board.blackQueens, board.getEmptyCells(), board.getWhitePieces()));
+        }
+        return moves;
+    }
 
     public Set<Move> getWhitePawnMoves(long whitePawns, long emptyCells, long enemyPieces) {
         if (whitePawns == 0) {
@@ -181,7 +201,7 @@ public class MoveEngine {
         switch (direction) {
             case UP:
                 while (tempCell >= 8) {
-                    tempPosition = tempPosition >> 8;
+                    tempPosition = tempPosition >>> 8;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(Move.of(position, tempPosition));
                 }
@@ -195,7 +215,7 @@ public class MoveEngine {
                 break;
             case LEFT:
                 while (tempCell % 8 > 0) {
-                    tempPosition = tempPosition >> 1;
+                    tempPosition = tempPosition >>> 1;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(Move.of(position, tempPosition));
                 }
@@ -209,14 +229,14 @@ public class MoveEngine {
                 break;
             case UP_RIGHT:
                 while (tempCell >= 8 && (tempCell + 1) % 8 > 0) {
-                    tempPosition = tempPosition >> 7;
+                    tempPosition = tempPosition >>> 7;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(Move.of(position, tempPosition));
                 }
                 break;
             case UP_LEFT:
                 while (tempCell >= 8 && tempCell % 8 > 0) {
-                    tempPosition = tempPosition >> 9;
+                    tempPosition = tempPosition >>> 9;
                     tempCell = Long.numberOfTrailingZeros(tempPosition);
                     moves.add(Move.of(position, tempPosition));
                 }

@@ -1,6 +1,7 @@
 package fun.diasonti.chessengine.engine;
 
 import fun.diasonti.chessengine.data.ChessBoard;
+import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Direction;
 import fun.diasonti.chessengine.data.Move;
 import fun.diasonti.chessengine.util.BoardUtils;
@@ -15,6 +16,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MoveEngineTest {
 
     private final MoveEngine moveEngine = new MoveEngine();
+
+    @Test
+    void getAvailableMovesWhite() {
+        final String fen = "rnbq1bnr/pppppppp/8/5N2/P3P3/R7/1PPP1PPP/1NBQ1B1R";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final Set<Move> moves = moveEngine.getAvailableMoves(board, Color.WHITE);
+        assertEquals(37, moves.size());
+    }
+
+    @Test
+    void getAvailableMovesBlack() {
+        final String fen = "2bq1bnr/1ppp1pp1/r3p3/pn5p/8/8/PPPPPPPP/RNBQ1BNR";
+        final ChessBoard board = BoardUtils.fenToBitboard(fen);
+        final Set<Move> moves = moveEngine.getAvailableMoves(board, Color.BLACK);
+        assertEquals(33, moves.size());
+    }
 
     @Test
     void getWhitePawnMovesPush() {
