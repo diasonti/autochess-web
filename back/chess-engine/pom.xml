@@ -5,7 +5,7 @@
 
     <groupId>fun.diasonti</groupId>
     <artifactId>chessengine</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>chess-engine</name>
     <description>Chess engine</description>
     <packaging>jar</packaging>
