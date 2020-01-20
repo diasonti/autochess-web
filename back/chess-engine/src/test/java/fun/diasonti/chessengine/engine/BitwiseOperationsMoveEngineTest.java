@@ -13,12 +13,12 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MoveEngineTest {
+public class BitwiseOperationsMoveEngineTest {
 
-    private final MoveEngine moveEngine = new MoveEngine();
+    private final BitwiseOperationsMoveEngine moveEngine = new BitwiseOperationsMoveEngine();
 
     @Test
-    void makeMoveWhite() {
+    public void testMakeMoveWhite() {
         final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final ChessBoard boardAfterMove = moveEngine.makeMove(board, Move.of(1L << 57, 1L << 42));
@@ -27,7 +27,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void makeMoveBlack() {
+    public void testMakeMoveBlack() {
         final String fen = "rnbqkbnr/pppp1ppp/8/4p3/8/2N5/PPPPPPPP/R1BQKBNR";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final ChessBoard boardAfterMove = moveEngine.makeMove(board, Move.of(1L << 5, 1L << 33));
@@ -36,7 +36,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getAvailableMovesWhite() {
+    public void testGetAvailableMovesWhite() {
         final String fen = "rnbq1bnr/pppppppp/8/5N2/P3P3/R7/1PPP1PPP/1NBQ1B1R";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getAvailableMoves(board, Color.WHITE);
@@ -44,7 +44,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getAvailableMovesBlack() {
+    public void testGetAvailableMovesBlack() {
         final String fen = "2bq1bnr/1ppp1pp1/r3p3/pn5p/8/8/PPPPPPPP/RNBQ1BNR";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getAvailableMoves(board, Color.BLACK);
@@ -52,7 +52,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getWhitePawnMovesPush() {
+    public void testGetWhitePawnMovesPush() {
         final String fen = "8/P7/8/8/8/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getWhitePawnMoves(board.whitePawns, board.getEmptyCells(), board.getBlackPieces());
@@ -61,7 +61,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getWhitePawnMovesBlocked() {
+    public void testGetWhitePawnMovesBlocked() {
         final String fen = "8/8/8/3p4/3P4/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getWhitePawnMoves(board.whitePawns, board.getEmptyCells(), board.getBlackPieces());
@@ -69,7 +69,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getWhitePawnMovesDoubleAttack() {
+    public void testGetWhitePawnMovesDoubleAttack() {
         final String fen = "8/p1p5/1P6/8/8/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getWhitePawnMoves(board.whitePawns, board.getEmptyCells(), board.getBlackPieces());
@@ -80,7 +80,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getBlackPawnMovesPush() {
+    public void testGetBlackPawnMovesPush() {
         final String fen = "8/1p6/8/8/8/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getBlackPawnMoves(board.blackPawns, board.getEmptyCells(), board.getWhitePieces());
@@ -89,7 +89,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getBlackPawnMovesBlocked() {
+    public void testGetBlackPawnMovesBlocked() {
         final String fen = "8/8/8/4p3/4P3/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getBlackPawnMoves(board.blackPawns, board.getEmptyCells(), board.getWhitePieces());
@@ -97,7 +97,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getBlackPawnMovesDoubleAttack() {
+    public void testGetBlackPawnMovesDoubleAttack() {
         final String fen = "8/1p6/P1P5/8/8/8/8/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getBlackPawnMoves(board.blackPawns, board.getEmptyCells(), board.getWhitePieces());
@@ -108,7 +108,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getRayMoves() {
+    public void testGetRayMoves() {
         final List<Move> movesUp = moveEngine.getRayMoves(1L << 25, Direction.UP);
         assertEquals(3, movesUp.size());
         assertEquals(Move.of(1L << 25, 1L << 17), movesUp.get(0));
@@ -159,7 +159,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getRookMoves() {
+    public void testGetRookMoves() {
         final String fen = "8/8/2P4p/1PRP4/2P3NR/2R1N2B/8/1NrN4";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getRookMoves(board.whiteRooks, board.getEmptyCells(), board.getBlackPieces());
@@ -174,7 +174,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getBishopMoves() {
+    public void testGetBishopMoves() {
         final String fen = "8/7p/6B1/6NQ/1N2p3/2P1N3/P2B4/BPp1N3";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getBishopMoves(board.whiteBishops, board.getEmptyCells(), board.getBlackPieces());
@@ -189,7 +189,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getQueenMoves() {
+    public void testGetQueenMoves() {
         final String fen = "6qQ/6P1/7P/4p3/2b5/1PQ1n3/1BP5/8";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getQueenMoves(board.whiteQueens, board.getEmptyCells(), board.getBlackPieces());
@@ -208,7 +208,7 @@ class MoveEngineTest {
     }
 
     @Test
-    void getKnightMoves() {
+    public void testGetKnightMoves() {
         final String fen = "1p2p3/2p4p/N4N2/2p4p/1p2p1P1/1p6/2P5/N7";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
         final Set<Move> moves = moveEngine.getKnightMoves(board.whiteKnights, board.getEmptyCells(), board.getBlackPieces());

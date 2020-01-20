@@ -3,8 +3,9 @@ package fun.diasonti.chessengine.engine;
 import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Piece;
+import fun.diasonti.chessengine.engine.interfaces.EvaluationEngine;
 
-public class EvaluationEngine {
+public class MaterialPositionalEvaluationEngine implements EvaluationEngine {
 
     private static final int[][][] PAWN = {
             {
@@ -142,7 +143,6 @@ public class EvaluationEngine {
         int score = 0;
         score += getMaterialScore(board);
         score += getPositionalScore(board);
-        score += getMobilityScore(board);
         return score;
     }
 
@@ -296,9 +296,4 @@ public class EvaluationEngine {
         }
         return score;
     }
-
-    public int getMobilityScore(ChessBoard board) {
-        return 0;
-    }
-
 }

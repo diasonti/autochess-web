@@ -3,22 +3,35 @@ package fun.diasonti.chessengine.engine;
 import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Move;
+import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 
 import java.util.Set;
 
-public class MinimaxAlphaBetaSearchEngine {
+public class MinimaxAlphaBetaSearchEngine implements SearchEngine {
 
-    private static final int MAX_DEPTH = 4;
+    private MaterialPositionalEvaluationEngine evaluationEngine;
+    private BitwiseOperationsMoveEngine moveEngine;
 
-    private static EvaluationEngine evaluationEngine = new EvaluationEngine();
-    private static MoveEngine moveEngine = new MoveEngine();
-
-    public Move getMove(ChessBoard board, Color color) {
-        return minimaxAlphaBeta(board, color, 0, -10_000, 10_000, null);
+    public MinimaxAlphaBetaSearchEngine() {
+        evaluationEngine = new MaterialPositionalEvaluationEngine();
+        moveEngine = new BitwiseOperationsMoveEngine();
     }
 
-    private Move minimaxAlphaBeta(ChessBoard board, Color color, int depth, int alpha, int beta, Move move) {
-        if (depth == MAX_DEPTH) {
+    public void setEvaluationEngine(MaterialPositionalEvaluationEngine evaluationEngine) {
+        this.evaluationEngine = evaluationEngine;
+    }
+
+    public void setMoveEngine(BitwiseOperationsMoveEngine moveEngine) {
+        this.moveEngine = moveEngine;
+    }
+
+    @Override
+    public Move getBestMove(ChessBoard board, Color color, int maxDepth) {
+        return minimaxAlphaBeta(board, color, 0, -10_000, 10_000, null, maxDepth);
+    }
+
+    private Move minimaxAlphaBeta(ChessBoard board, Color color, int depth, int alpha, int beta, Move move, int maxDepth) {
+        if (depth == maxDepth) {
             move.score = evaluationEngine.getScore(board);
             return move;
         }
@@ -29,7 +42,7 @@ public class MinimaxAlphaBetaSearchEngine {
         Move betaMove = Move.empty();
         for (Move m : moves) {
             final ChessBoard boardAfterMove = moveEngine.makeMove(board, m);
-            final Move bestMove = minimaxAlphaBeta(boardAfterMove, color.getOpposite(), depth + 1 , alpha, beta, m);
+            final Move bestMove = minimaxAlphaBeta(boardAfterMove, color.getOpposite(), depth + 1 , alpha, beta, m, maxDepth);
             final int bestScore = bestMove.score;
             if (color == Color.WHITE) {
                 if (bestScore > alpha) {

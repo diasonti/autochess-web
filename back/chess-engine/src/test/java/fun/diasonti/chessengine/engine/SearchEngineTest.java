@@ -13,10 +13,10 @@ public class SearchEngineTest {
     private final MinimaxAlphaBetaSearchEngine searchEngine = new MinimaxAlphaBetaSearchEngine();
 
     @Test
-    void searchMoveWhite() {
+    public void testSearchMoveWhiteTest() {
         final String fen = "p6p/8/8/3r4/4P3/8/8/5P2";
         final ChessBoard board = BoardUtils.fenToBitboard(fen);
-        final Move foundMove = searchEngine.getMove(board, Color.WHITE);
+        final Move foundMove = searchEngine.getBestMove(board, Color.WHITE, 4);
         final String fenAfterMove = BoardUtils.bitboardToFen(board);
         assertEquals(Move.of(1L << 36, 1L << 27), foundMove);
         assertEquals(fen, fenAfterMove);

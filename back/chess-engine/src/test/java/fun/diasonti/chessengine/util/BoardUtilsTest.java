@@ -2,18 +2,15 @@ package fun.diasonti.chessengine.util;
 
 import fun.diasonti.chessengine.data.ChessBoard;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class BoardUtilsTest {
+public class BoardUtilsTest {
 
-    private static final Logger log = LoggerFactory.getLogger(BoardUtilsTest.class);
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     @Test
-    void fenToBitboardAndBack() {
+    public void testFenToBitboardAndBack() {
         final String fenBefore = "rnbqkbnr/p1p1p2p/8/8/1p2ppp1/1P3PPP/P1PP4/RNBQKBNK";
         final ChessBoard board = BoardUtils.fenToBitboard(fenBefore);
         final String fenAfter = BoardUtils.bitboardToFen(board);
@@ -21,7 +18,7 @@ class BoardUtilsTest {
     }
 
     @Test
-    void print() {
+    public void testPrint() {
         final String fenBefore = "rnbqkbnr/p1p1p2p/8/8/1p2ppp1/1P3PPP/P1PP4/RNBQKBNK";
         final ChessBoard board = BoardUtils.fenToBitboard(fenBefore);
         final String boardString = BoardUtils.boardToString(board);
