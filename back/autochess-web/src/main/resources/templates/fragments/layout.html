@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <th:block th:fragment="meta">
+<!--        <link rel="icon" th:href="@{/static/favicon.ico}" type="image/x-icon"/>-->
+<!--        <link rel="shortcut icon" th:href="@{/static/favicon.ico}" type="image/x-icon"/>-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    </th:block>
+    <title>Autochess</title>
+    <th:block th:fragment="style">
+        <link rel="stylesheet" th:href="@{/static/lib/css/bootstrap.min.css(v=1)}"/>
+    </th:block>
+</head>
+<body>
+
+<th:block th:fragment="scripts">
+    <script th:src="@{/static/lib/js/jquery.min.js(v=1)}"></script>
+    <script th:src="@{/static/lib/js/popper.min.js(v=1)}"></script>
+    <script th:src="@{/static/lib/js/bootstrap.min.js(v=1)}"></script>
+    <script th:src="@{/static/lib/js/vue.min.js(v=1)}"></script>
+    <script th:src="@{/static/lib/js/sockjs.min.js(v=1)}"></script>
+    <script th:src="@{/static/lib/js/stomp.min.js(v=1)}"></script>
+</th:block>
+</body>
+</html>
