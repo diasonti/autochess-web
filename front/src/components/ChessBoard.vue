@@ -1,11 +1,12 @@
 <template>
-    <div>
+    <div ondragstart="return false;" ondrop="return false;">
         <div style="display: none;">
             <Piece v-for="piece in piecesMap" :key="piece.key" :color="piece.color" :type="piece.name" size="70px" :id="piece.color + '_' + piece.name" />
         </div>
         <table>
             <tr v-for="row in 8" :key="row">
-                <td v-for="col in 8" :key="col" class="chess-board-cell" :class="cellNumber(row, col)" @click="cellClick">
+                <td v-for="col in 8" :key="col" class="chess-board-cell" :class="cellNumber(row, col)"
+                    @mouseenter="cellEnter" @mouseleave="cellLeave">
                 </td>
             </tr>
         </table>
@@ -24,7 +25,9 @@
             return {
                 fen: '',
                 fenHistory: [],
-                cells: [],
+                cells: [
+                    // cellNumber: $(td)
+                ],
                 piecesMap: {
                     'K': { key: 'K', name: 'king',   color: 'white', char: '&#9812;', template: null },
                     'Q': { key: 'Q', name: 'queen',  color: 'white', char: '&#9813;', template: null },
@@ -39,9 +42,10 @@
                     'n': { key: 'n', name: 'knight', color: 'black', char: '&#9822;', template: null },
                     'p': { key: 'p', name: 'pawn',   color: 'black', char: '&#9823;', template: null },
                 },
-                piecesOnBoard: [
-                    // { key: '', element: $(piece) },
-                ],
+                piecesOnBoard: {
+                    // uid: { key: 'k', cellNumber: 0, element: $(piece) },
+                },
+                dragPiece: null,
             };
         },
         watch: {
@@ -53,29 +57,74 @@
         methods: {
             applyFen(fen) {
                 let pos = 0
-                this.cells.forEach(cell => cell.html(''))
+                this.cells.forEach(cell => {
+                    cell.empty()
+                    cell.off('click')
+                    cell.on('click', (e) => this.cellClick(e))
+                })
                 this.piecesOnBoard = []
                 for (let i = 0; pos < 64; i++) {
                     const symbol = fen[i]
                     if (this.piecesMap[symbol]) {
                         const piece = this.piecesMap[symbol]
-                        this.cells[pos].html('')
-                        let newElement = piece.template.clone()
-                        newElement.removeAttr('id')
-                        this.cells[pos].append(newElement)
-                        this.piecesOnBoard.push({
+                        this.cells[pos].empty().empty()
+                        this.cells[pos].off('click')
+                        let newPiece = piece.template.clone()
+                        this.cells[pos].append(newPiece)
+                        newPiece.removeAttr('id')
+                        const uid = Math.random().toString(36).substr(2, 9);
+                        newPiece.attr('data-uid', uid)
+                        newPiece.on('click', (e) => this.pieceClick(e))
+                        this.piecesOnBoard[uid] = {
                             key: piece.key,
-                            element: newElement
-                        })
+                            cellNumber: pos,
+                            element: newPiece
+                        }
                         pos++;
                     } else if ("12345678".includes(symbol)) {
                         pos += parseInt(symbol)
                     }
                 }
             },
+            cellEnter(e) {
+                const target = $(e.target)
+                const cellNumber = target.data('number');
+                let allowedToPlace = true;
+                for (let uid in this.piecesOnBoard) {
+                    if (this.piecesOnBoard[uid].cellNumber === cellNumber) {
+                        allowedToPlace = false;
+                        break;
+                    }
+                }
+                if (this.dragPiece !== null && allowedToPlace) {
+                    target.css({'background-color': 'green'})
+                }
+            },
+            cellLeave(e) {
+                const target = $(e.target)
+                target.css({'background-color': ''})
+            },
             cellClick(e) {
                 const target = $(e.target)
-                console.log(target.html())
+                if (this.dragPiece !== null) {
+                    const fromCell = this.cells[this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber]
+                    fromCell.empty()
+                    fromCell.on('click', (event) => this.cellClick(event))
+                    this.dragPiece.css({'background-color': ''})
+                    target.empty()
+                    target.off('click')
+                    target.append(this.dragPiece)
+                    this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber = target.data('number')
+                    this.dragPiece.on('click', (event) => this.pieceClick(event))
+                    this.dragPiece = null
+                }
+            },
+            pieceClick(e) {
+                const target = $(e.target)
+                if (this.dragPiece === null) {
+                    this.dragPiece = target
+                    this.dragPiece.css({'background-color': 'blue'})
+                }
             },
             connect() {
                 const ctx = this
@@ -98,7 +147,9 @@
         },
         mounted() {
             for (let i = 0; i < 64; i++) {
-                this.cells[i] = $('td.chess-board-cell.' + i)
+                const cell = $('td.chess-board-cell.' + i)
+                cell.attr('data-number', i)
+                this.cells[i] = cell
             }
             for (let key in this.piecesMap) {
                 const id = this.piecesMap[key].color + '_' + this.piecesMap[key].name
