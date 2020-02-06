@@ -164,6 +164,9 @@
                 if (this.dragPiece === null) {
                     this.dragPiece = target
                     this.dragPiece.css({'background-color': 'blue'})
+                } else if (this.dragPiece.data('uid') === target.data('uid')) {
+                    this.dragPiece.css({'background-color': ''})
+                    this.dragPiece = null
                 }
             },
             connect() {
