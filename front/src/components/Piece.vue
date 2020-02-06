@@ -10,13 +10,13 @@
             color: {
                 required: true,
                 validator: function (value) {
-                    return ['white', 'black'].indexOf(value) !== -1
+                    return ['white', 'black', 'empty'].indexOf(value) !== -1
                 }
             },
             type: {
                 required: true,
                 validator(value) {
-                    return ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn'].indexOf(value) !== -1
+                    return ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn', 'empty'].indexOf(value) !== -1
                 }
             },
             size: {

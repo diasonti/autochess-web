@@ -1,6 +1,6 @@
 <template>
-    <div ondragstart="return false;" ondrop="return false;">
-        <div style="display: none;">
+    <div ondragstart="return false" ondrop="return false">
+        <div style="display: none">
             <Piece v-for="piece in piecesMap" :key="piece.key" :color="piece.color" :type="piece.name" size="70px" :id="piece.color + '_' + piece.name" />
         </div>
         <table>
@@ -10,6 +10,8 @@
                 </td>
             </tr>
         </table>
+        <p>{{ fen }}</p>
+        <p>{{ moveHistory }}</p>
     </div>
 </template>
 
@@ -24,7 +26,9 @@
         data() {
             return {
                 fen: '',
-                fenHistory: [],
+                moveHistory: [
+                    // { from: (CellNumber), to: (CellNumber) }
+                ],
                 cells: [
                     // cellNumber: $(td)
                 ],
@@ -41,24 +45,24 @@
                     'b': { key: 'b', name: 'bishop', color: 'black', char: '&#9821;', template: null },
                     'n': { key: 'n', name: 'knight', color: 'black', char: '&#9822;', template: null },
                     'p': { key: 'p', name: 'pawn',   color: 'black', char: '&#9823;', template: null },
+                    ' ': { key: ' ', name: 'empty',  color: 'empty', char: '&nbsp;',  template: null },
                 },
                 piecesOnBoard: {
                     // uid: { key: 'k', cellNumber: 0, element: $(piece) },
                 },
                 dragPiece: null,
-            };
-        },
-        watch: {
-            fen(newFen, oldFen) {
-                this.applyFen(newFen)
-                this.fenHistory.push(oldFen)
             }
         },
         methods: {
             applyFen(fen) {
+                this.fen = fen
                 let pos = 0
                 this.cells.forEach(cell => {
                     cell.empty()
+                    let emptyPiece = this.piecesMap[' '].template.clone()
+                    emptyPiece.removeAttr('id')
+                    emptyPiece.css({'pointer-events': 'none'})
+                    cell.append(emptyPiece)
                     cell.off('click')
                     cell.on('click', (e) => this.cellClick(e))
                 })
@@ -72,7 +76,7 @@
                         let newPiece = piece.template.clone()
                         this.cells[pos].append(newPiece)
                         newPiece.removeAttr('id')
-                        const uid = Math.random().toString(36).substr(2, 9);
+                        const uid = Math.random().toString(36).substr(2, 9)
                         newPiece.attr('data-uid', uid)
                         newPiece.on('click', (e) => this.pieceClick(e))
                         this.piecesOnBoard[uid] = {
@@ -80,20 +84,49 @@
                             cellNumber: pos,
                             element: newPiece
                         }
-                        pos++;
+                        pos++
                     } else if ("12345678".includes(symbol)) {
                         pos += parseInt(symbol)
                     }
                 }
             },
+            extractFen() {
+                let fen = ''
+                let empty = 0
+                let column = 0
+                for (let i = 0; i < this.cells.length; i++) {
+                    if (column === 8) {
+                        if (empty > 0) {
+                            fen += empty
+                            empty = 0
+                        }
+                        fen += '/'
+                        column = 0
+                    }
+                    column++
+                    const cell = this.cells[i]
+                    const pieceUid = $($(cell).children()[0]).data('uid')
+                    if (pieceUid) {
+                        if (empty > 0) {
+                            fen += empty
+                            empty = 0
+                        }
+                        const piece = this.piecesOnBoard[$($(cell).children()[0]).data('uid')]
+                        fen += piece.key
+                    } else {
+                        empty++
+                    }
+                }
+                return fen
+            },
             cellEnter(e) {
                 const target = $(e.target)
-                const cellNumber = target.data('number');
-                let allowedToPlace = true;
+                const cellNumber = target.data('number')
+                let allowedToPlace = true
                 for (let uid in this.piecesOnBoard) {
                     if (this.piecesOnBoard[uid].cellNumber === cellNumber) {
-                        allowedToPlace = false;
-                        break;
+                        allowedToPlace = false
+                        break
                     }
                 }
                 if (this.dragPiece !== null && allowedToPlace) {
@@ -105,19 +138,26 @@
                 target.css({'background-color': ''})
             },
             cellClick(e) {
-                const target = $(e.target)
+                const targetCellNumber = $(e.target).data('number')
                 if (this.dragPiece !== null) {
-                    const fromCell = this.cells[this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber]
-                    fromCell.empty()
-                    fromCell.on('click', (event) => this.cellClick(event))
-                    this.dragPiece.css({'background-color': ''})
-                    target.empty()
-                    target.off('click')
-                    target.append(this.dragPiece)
-                    this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber = target.data('number')
-                    this.dragPiece.on('click', (event) => this.pieceClick(event))
-                    this.dragPiece = null
+                    const fromCellNumber = this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber
+                    this.movePiece(fromCellNumber, targetCellNumber)
                 }
+            },
+            movePiece(fromCellNumber, toCellNumber) {
+                const fromCell = this.cells[fromCellNumber]
+                const toCell = this.cells[toCellNumber]
+                fromCell.empty()
+                fromCell.on('click', (event) => this.cellClick(event))
+                this.dragPiece.css({'background-color': ''})
+                toCell.empty()
+                toCell.off('click')
+                toCell.append(this.dragPiece)
+                this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber = toCell.data('number')
+                this.dragPiece.on('click', (event) => this.pieceClick(event))
+                this.dragPiece = null
+                this.fen = this.extractFen()
+                this.moveHistory.push({from: fromCellNumber, to: toCellNumber})
             },
             pieceClick(e) {
                 const target = $(e.target)
@@ -156,9 +196,8 @@
                 this.piecesMap[key].template = $('#' + id)
             }
 
-
-            this.fen = 'rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR'
-            // this.connect();
+            this.applyFen('rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR')
+            // this.connect()
         },
     }
 </script>
