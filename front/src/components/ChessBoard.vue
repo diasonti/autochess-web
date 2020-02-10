@@ -117,6 +117,9 @@
                         empty++
                     }
                 }
+                if (empty > 0) {
+                    fen += empty
+                }
                 return fen
             },
             cellEnter(e) {
