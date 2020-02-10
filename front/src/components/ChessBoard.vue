@@ -105,11 +105,13 @@
                 if (this.draggedNumber === null && this.cells[targetCellNumber].key !== ' ') {
                     this.draggedNumber = targetCellNumber
                     let draggedPiece = this.cells[this.draggedNumber]
-                    draggedPiece.class = {'selected': true}
+                    draggedPiece.class['selected'] = true
                     this.$set(this.cells, this.draggedNumber, draggedPiece)
                 } else if (this.draggedNumber === targetCellNumber) {
                     let draggedPiece = this.cells[this.draggedNumber]
-                    draggedPiece.class = {}
+                    draggedPiece.class['available-move-to'] = false
+                    draggedPiece.class['available-move-from'] = false
+                    draggedPiece.class['selected'] = false
                     this.$set(this.cells, this.draggedNumber, draggedPiece)
                     this.draggedNumber = null
                 } else if (this.cells[targetCellNumber].class['available-move-to']) {
@@ -127,18 +129,22 @@
                         let cell = this.cells[i]
                         if (this.draggedNumber !== null) {
                             if (cell.key === ' ') {
-                                cell.class = {'available-move-to': true}
+                                cell.class['available-move-to'] = true
                                 this.$set(this.cells, i, cell)
                             } else {
-                                cell.class = {}
+                                cell.class['available-move-to'] = false
+                                cell.class['available-move-from'] = false
+                                cell.class['selected'] = false
                                 this.$set(this.cells, i, cell)
                             }
                         } else {
                             if (cell.key === ' ') {
-                                cell.class = {}
+                                cell.class['available-move-to'] = false
+                                cell.class['available-move-from'] = false
+                                cell.class['selected'] = false
                                 this.$set(this.cells, i, cell)
                             } else {
-                                cell.class = {'available-move-from': true}
+                                cell.class['available-move-from'] = true
                                 this.$set(this.cells, i, cell)
                             }
                         }
@@ -147,8 +153,16 @@
             movePiece(fromCellNumber, toCellNumber) {
                 const blank = this.piecesMap[' ']
                 const fromCell = this.cells[fromCellNumber]
-                this.$set(this.cells, toCellNumber, {key: fromCell.key, name: fromCell.name, color: fromCell.color, class: {}})
-                this.$set(this.cells, fromCellNumber, {key: blank.key, name: blank.name, color: blank.color, class: {}})
+                for (let i = 0; i < 64; i++) {
+                    let cell = this.cells[i]
+                    cell.class['last-move-from'] = false
+                    cell.class['last-move-to'] = false
+                    this.$set(this.cells, i, cell)
+                }
+                this.$set(this.cells, toCellNumber,
+                    {key: fromCell.key, name: fromCell.name, color: fromCell.color, class: {'last-move-to': true}})
+                this.$set(this.cells, fromCellNumber,
+                    {key: blank.key, name: blank.name, color: blank.color, class: {'last-move-from': true}})
                 this.fen = this.extractFen()
                 this.moveHistory.push({from: fromCellNumber, to: toCellNumber})
             },
@@ -206,5 +220,11 @@
     .available-move-to:hover {
         background: rgb(62, 128, 20) !important;
         cursor: pointer;
+    }
+    .last-move-from {
+        background: rgb(128, 85, 115) !important;
+    }
+    .last-move-to {
+        background: rgb(128, 39, 105) !important;
     }
 </style>
