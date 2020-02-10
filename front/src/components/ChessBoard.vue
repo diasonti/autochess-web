@@ -173,12 +173,16 @@
             connect() {
                 const ctx = this
                 const gameSocketUrl = '/topic/test'
-                const socket = new SockJs('/ws')
+                const socket = new SockJs('http://localhost:5000/ws')
                 const stompClient = Stomp.over(socket)
                 stompClient.connect({}, function (frame) {
                     console.log('Connected: ' + frame)
                     stompClient.subscribe(gameSocketUrl, function (message) {
-                        ctx.fen = message.body
+                        if (message.body.startsWith('BOARD:')) {
+                            ctx.applyFen(message.body.substring(6));
+                        } else if (message.body.startsWith('MOVE:')) {
+                            ctx.movePiece(message.body.substring(5).split(',')[0], message.body.substring(5).split(',')[1])
+                        }
                     })
                 })
             },
