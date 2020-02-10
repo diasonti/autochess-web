@@ -1,12 +1,11 @@
 <template>
     <div ondragstart="return false" ondrop="return false">
-        <div style="display: none">
-            <Piece v-for="piece in piecesMap" :key="piece.key" :color="piece.color" :type="piece.name" size="70px" :id="piece.color + '_' + piece.name" />
-        </div>
         <table>
             <tr v-for="row in 8" :key="row">
-                <td v-for="col in 8" :key="col" class="chess-board-cell" :class="cellNumber(row, col)"
-                    @mouseenter="cellEnter" @mouseleave="cellLeave">
+                <td v-for="col in 8" :key="col" class="chess-board-cell" :data-number="cellNumber(row, col)"
+                    :class="cells[cellNumber(row, col)].class" @click="cellClick">
+                    <Piece :color="cells[cellNumber(row, col)].color" :type="cells[cellNumber(row, col)].name"
+                           size="70px" />
                 </td>
             </tr>
         </table>
@@ -25,70 +24,51 @@
         components: {Piece},
         data() {
             return {
-                fen: '',
+                fen: '', // rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR
                 moveHistory: [
                     // { from: (CellNumber), to: (CellNumber) }
                 ],
                 cells: [
-                    // cellNumber: $(td)
+                    // {key: 'b', name: 'bishop', color: 'white', class: {'selected': true}}, - for each cell
                 ],
                 piecesMap: {
-                    'K': { key: 'K', name: 'king',   color: 'white', char: '&#9812;', template: null },
-                    'Q': { key: 'Q', name: 'queen',  color: 'white', char: '&#9813;', template: null },
-                    'R': { key: 'R', name: 'rook',   color: 'white', char: '&#9814;', template: null },
-                    'B': { key: 'B', name: 'bishop', color: 'white', char: '&#9815;', template: null },
-                    'N': { key: 'N', name: 'knight', color: 'white', char: '&#9816;', template: null },
-                    'P': { key: 'P', name: 'pawn',   color: 'white', char: '&#9817;', template: null },
-                    'k': { key: 'k', name: 'king',   color: 'black', char: '&#9818;', template: null },
-                    'q': { key: 'q', name: 'queen',  color: 'black', char: '&#9819;', template: null },
-                    'r': { key: 'r', name: 'rook',   color: 'black', char: '&#9820;', template: null },
-                    'b': { key: 'b', name: 'bishop', color: 'black', char: '&#9821;', template: null },
-                    'n': { key: 'n', name: 'knight', color: 'black', char: '&#9822;', template: null },
-                    'p': { key: 'p', name: 'pawn',   color: 'black', char: '&#9823;', template: null },
-                    ' ': { key: ' ', name: 'empty',  color: 'empty', char: '&nbsp;',  template: null },
+                    'Q': { key: 'Q', name: 'queen',  color: 'white'},
+                    'R': { key: 'R', name: 'rook',   color: 'white'},
+                    'B': { key: 'B', name: 'bishop', color: 'white'},
+                    'N': { key: 'N', name: 'knight', color: 'white'},
+                    'P': { key: 'P', name: 'pawn',   color: 'white'},
+                    'k': { key: 'k', name: 'king',   color: 'black'},
+                    'q': { key: 'q', name: 'queen',  color: 'black'},
+                    'r': { key: 'r', name: 'rook',   color: 'black'},
+                    'b': { key: 'b', name: 'bishop', color: 'black'},
+                    'n': { key: 'n', name: 'knight', color: 'black'},
+                    'p': { key: 'p', name: 'pawn',   color: 'black'},
+                    'K': { key: 'K', name: 'king',   color: 'white'},
+                    ' ': { key: ' ', name: 'empty',  color: 'empty'},
                 },
-                piecesOnBoard: {
-                    // uid: { key: 'k', cellNumber: 0, element: $(piece) },
-                },
-                dragPiece: null,
+                draggedNumber: null,
             }
         },
         methods: {
             applyFen(fen) {
                 this.fen = fen
                 let pos = 0
-                this.cells.forEach(cell => {
-                    cell.empty()
-                    let emptyPiece = this.piecesMap[' '].template.clone()
-                    emptyPiece.removeAttr('id')
-                    emptyPiece.css({'pointer-events': 'none'})
-                    cell.append(emptyPiece)
-                    cell.off('click')
-                    cell.on('click', (e) => this.cellClick(e))
-                })
-                this.piecesOnBoard = []
+                const blank = this.piecesMap[' ']
                 for (let i = 0; pos < 64; i++) {
                     const symbol = fen[i]
                     if (this.piecesMap[symbol]) {
                         const piece = this.piecesMap[symbol]
-                        this.cells[pos].empty().empty()
-                        this.cells[pos].off('click')
-                        let newPiece = piece.template.clone()
-                        this.cells[pos].append(newPiece)
-                        newPiece.removeAttr('id')
-                        const uid = Math.random().toString(36).substr(2, 9)
-                        newPiece.attr('data-uid', uid)
-                        newPiece.on('click', (e) => this.pieceClick(e))
-                        this.piecesOnBoard[uid] = {
-                            key: piece.key,
-                            cellNumber: pos,
-                            element: newPiece
-                        }
+                        this.$set(this.cells, pos, {key: piece.key, name: piece.name, color: piece.color, class: {}})
                         pos++
                     } else if ("12345678".includes(symbol)) {
-                        pos += parseInt(symbol)
+                        const skip = parseInt(symbol)
+                        for (let j = 0; j < skip; j++) {
+                            this.$set(this.cells, pos, {key: blank.key, name: blank.name, color: blank.color, class: {}})
+                            pos++
+                        }
                     }
                 }
+                this.highlightAvailableActions()
             },
             extractFen() {
                 let fen = ''
@@ -105,14 +85,12 @@
                     }
                     column++
                     const cell = this.cells[i]
-                    const pieceUid = $($(cell).children()[0]).data('uid')
-                    if (pieceUid) {
+                    if (cell.key !== ' ') {
                         if (empty > 0) {
                             fen += empty
                             empty = 0
                         }
-                        const piece = this.piecesOnBoard[$($(cell).children()[0]).data('uid')]
-                        fen += piece.key
+                        fen += cell.key
                     } else {
                         empty++
                     }
@@ -122,55 +100,57 @@
                 }
                 return fen
             },
-            cellEnter(e) {
-                const target = $(e.target)
-                const cellNumber = target.data('number')
-                let allowedToPlace = true
-                for (let uid in this.piecesOnBoard) {
-                    if (this.piecesOnBoard[uid].cellNumber === cellNumber) {
-                        allowedToPlace = false
-                        break
-                    }
-                }
-                if (this.dragPiece !== null && allowedToPlace) {
-                    target.css({'background-color': 'green'})
-                }
-            },
-            cellLeave(e) {
-                const target = $(e.target)
-                target.css({'background-color': ''})
-            },
             cellClick(e) {
-                const targetCellNumber = $(e.target).data('number')
-                if (this.dragPiece !== null) {
-                    const fromCellNumber = this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber
+                const targetCellNumber = e.target.dataset.number
+                if (this.draggedNumber === null && this.cells[targetCellNumber].key !== ' ') {
+                    this.draggedNumber = targetCellNumber
+                    let draggedPiece = this.cells[this.draggedNumber]
+                    draggedPiece.class = {'selected': true}
+                    this.$set(this.cells, this.draggedNumber, draggedPiece)
+                } else if (this.draggedNumber === targetCellNumber) {
+                    let draggedPiece = this.cells[this.draggedNumber]
+                    draggedPiece.class = {}
+                    this.$set(this.cells, this.draggedNumber, draggedPiece)
+                    this.draggedNumber = null
+                } else if (this.cells[targetCellNumber].class['available-move-to']) {
+                    const fromCellNumber = this.draggedNumber
                     this.movePiece(fromCellNumber, targetCellNumber)
+                    this.draggedNumber = null
                 }
+                this.highlightAvailableActions()
+            },
+            highlightAvailableActions() {
+                    for (let i = 0; i < 64; i++) {
+                        if (i == this.draggedNumber)
+                            continue
+
+                        let cell = this.cells[i]
+                        if (this.draggedNumber !== null) {
+                            if (cell.key === ' ') {
+                                cell.class = {'available-move-to': true}
+                                this.$set(this.cells, i, cell)
+                            } else {
+                                cell.class = {}
+                                this.$set(this.cells, i, cell)
+                            }
+                        } else {
+                            if (cell.key === ' ') {
+                                cell.class = {}
+                                this.$set(this.cells, i, cell)
+                            } else {
+                                cell.class = {'available-move-from': true}
+                                this.$set(this.cells, i, cell)
+                            }
+                        }
+                    }
             },
             movePiece(fromCellNumber, toCellNumber) {
+                const blank = this.piecesMap[' ']
                 const fromCell = this.cells[fromCellNumber]
-                const toCell = this.cells[toCellNumber]
-                fromCell.empty()
-                fromCell.on('click', (event) => this.cellClick(event))
-                this.dragPiece.css({'background-color': ''})
-                toCell.empty()
-                toCell.off('click')
-                toCell.append(this.dragPiece)
-                this.piecesOnBoard[this.dragPiece.data('uid')].cellNumber = toCell.data('number')
-                this.dragPiece.on('click', (event) => this.pieceClick(event))
-                this.dragPiece = null
+                this.$set(this.cells, toCellNumber, {key: fromCell.key, name: fromCell.name, color: fromCell.color, class: {}})
+                this.$set(this.cells, fromCellNumber, {key: blank.key, name: blank.name, color: blank.color, class: {}})
                 this.fen = this.extractFen()
                 this.moveHistory.push({from: fromCellNumber, to: toCellNumber})
-            },
-            pieceClick(e) {
-                const target = $(e.target)
-                if (this.dragPiece === null) {
-                    this.dragPiece = target
-                    this.dragPiece.css({'background-color': 'blue'})
-                } else if (this.dragPiece.data('uid') === target.data('uid')) {
-                    this.dragPiece.css({'background-color': ''})
-                    this.dragPiece = null
-                }
             },
             connect() {
                 const ctx = this
@@ -185,23 +165,16 @@
                 })
             },
             cellNumber(row, col) {
-                const cellNumber = (row - 1) * 8 + (col - 1)
-                let classObject = {}
-                classObject[cellNumber] = true
-                return classObject
+                return (row - 1) * 8 + (col - 1)
+            }
+        },
+        created() {
+            const blank = this.piecesMap[' ']
+            for (let i = 0; i < 64; i++) {
+                this.cells[i] = {key: blank.key, name: blank.name, color: blank.color, class: {}}
             }
         },
         mounted() {
-            for (let i = 0; i < 64; i++) {
-                const cell = $('td.chess-board-cell.' + i)
-                cell.attr('data-number', i)
-                this.cells[i] = cell
-            }
-            for (let key in this.piecesMap) {
-                const id = this.piecesMap[key].color + '_' + this.piecesMap[key].name
-                this.piecesMap[key].template = $('#' + id)
-            }
-
             this.applyFen('rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR')
             // this.connect()
         },
@@ -221,5 +194,17 @@
     tr:nth-child(odd) td:nth-child(even),
     tr:nth-child(even) td:nth-child(odd) {
         background: #b58863;
+    }
+    .selected {
+        background: rgba(247, 238, 35, 0.69) !important;
+        cursor: pointer;
+    }
+    .available-move-from:hover {
+        background: rgba(0, 128, 0, 0.2) !important;
+        cursor: pointer;
+    }
+    .available-move-to:hover {
+        background: rgb(62, 128, 20) !important;
+        cursor: pointer;
     }
 </style>

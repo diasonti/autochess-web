@@ -33,5 +33,6 @@
         height: 1000px;
         background-repeat: no-repeat !important;
         background-size: cover !important;
+        pointer-events: none;
     }
 </style>
