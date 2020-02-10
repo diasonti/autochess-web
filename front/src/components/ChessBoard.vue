@@ -9,8 +9,12 @@
                 </td>
             </tr>
         </table>
-        <p>{{ fen }}</p>
-        <p>{{ moveHistory }}</p>
+        <input class="form-control" type="text" v-model="fen" readonly>
+        <button type="button" class="btn btn-primary" @click="connect">Connect WS</button>
+        <h5>Move history</h5>
+        <ol reversed>
+            <li v-for="(move, index) in moveHistory" :key="index"><code>{{ move }}</code></li>
+        </ol>
     </div>
 </template>
 
@@ -164,7 +168,7 @@
                 this.$set(this.cells, fromCellNumber,
                     {key: blank.key, name: blank.name, color: blank.color, class: {'last-move-from': true}})
                 this.fen = this.extractFen()
-                this.moveHistory.push({from: fromCellNumber, to: toCellNumber})
+                this.moveHistory.unshift({from: fromCellNumber, to: toCellNumber})
             },
             connect() {
                 const ctx = this
@@ -190,7 +194,6 @@
         },
         mounted() {
             this.applyFen('rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR')
-            // this.connect()
         },
     }
 </script>
