@@ -1,5 +1,5 @@
 <template>
-    <div :style="{ background: 'url(/img/pieces/' + color + '/' + type + '.svg)', width: size, height: size }">
+    <div :style="{ background: 'url(/img/pieces/' + color + '/' + type + '.min.svg)', width: size, height: size }">
     </div>
 </template>
 
