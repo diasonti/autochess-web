@@ -23,6 +23,7 @@
     import Stomp from 'stompjs'
     import Piece from './Piece'
     import {piecesMap} from '../utils/chessPieces'
+    import {cellNumbers} from '../utils/cellNumbers'
 
     export default {
         name: 'ChessBoard',
@@ -168,7 +169,7 @@
                 })
             },
             cellNumber(row, col) {
-                return (row - 1) * 8 + (col - 1)
+                return cellNumbers[row][col]
             }
         },
         created() {
