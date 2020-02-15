@@ -22,103 +22,94 @@
     import SockJs from 'sockjs-client'
     import Stomp from 'stompjs'
     import Piece from './Piece'
+    import {piecesMap} from '../utils/chessPieces'
 
     export default {
         name: 'ChessBoard',
         components: {Piece},
         data() {
             return {
-                fen: '', // rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR
                 moveHistory: [
                     // { from: (CellNumber), to: (CellNumber) }
                 ],
                 cells: [
                     // {key: 'b', name: 'bishop', color: 'white', class: {'selected': true}}, - for each cell
                 ],
-                piecesMap: {
-                    'Q': { key: 'Q', name: 'queen',  color: 'white'},
-                    'R': { key: 'R', name: 'rook',   color: 'white'},
-                    'B': { key: 'B', name: 'bishop', color: 'white'},
-                    'N': { key: 'N', name: 'knight', color: 'white'},
-                    'P': { key: 'P', name: 'pawn',   color: 'white'},
-                    'k': { key: 'k', name: 'king',   color: 'black'},
-                    'q': { key: 'q', name: 'queen',  color: 'black'},
-                    'r': { key: 'r', name: 'rook',   color: 'black'},
-                    'b': { key: 'b', name: 'bishop', color: 'black'},
-                    'n': { key: 'n', name: 'knight', color: 'black'},
-                    'p': { key: 'p', name: 'pawn',   color: 'black'},
-                    'K': { key: 'K', name: 'king',   color: 'white'},
-                    ' ': { key: ' ', name: 'empty',  color: 'empty'},
-                },
                 draggedNumber: null,
             }
         },
-        methods: {
-            applyFen(fen) {
-                this.fen = fen
-                let pos = 0
-                const blank = this.piecesMap[' ']
-                for (let i = 0; pos < 64; i++) {
-                    const symbol = fen[i]
-                    if (this.piecesMap[symbol]) {
-                        const piece = this.piecesMap[symbol]
-                        this.$set(this.cells, pos, {key: piece.key, name: piece.name, color: piece.color, class: {}})
-                        pos++
-                    } else if ("12345678".includes(symbol)) {
-                        const skip = parseInt(symbol)
-                        for (let j = 0; j < skip; j++) {
-                            this.$set(this.cells, pos, {key: blank.key, name: blank.name, color: blank.color, class: {}})
+        watch: {
+            draggedNumber (newValue, oldValue) {
+                if (oldValue) {
+                    this.cells[oldValue].class['selected'] = false
+                    this.$set(this.cells,oldValue, this.cells[oldValue])
+                }
+                if (newValue) {
+                    this.cells[newValue].class['selected'] = true
+                    this.cells[newValue].class['available-move-from'] = false
+                    this.$set(this.cells, newValue, this.cells[newValue])
+                }
+            }
+        },
+        computed: {
+            fen: {
+                get() {
+                    let fen = ''
+                    let empty = 0
+                    let column = 0
+                    for (let i = 0; i < 64; i++) {
+                        if (column === 8) {
+                            if (empty > 0) {
+                                fen += empty
+                                empty = 0
+                            }
+                            fen += '/'
+                            column = 0
+                        }
+                        column++
+                        const cell = this.cells[i]
+                        if (cell.key !== piecesMap.blank.key) {
+                            if (empty > 0) {
+                                fen += empty
+                                empty = 0
+                            }
+                            fen += cell.key
+                        } else {
+                            empty++
+                        }
+                    }
+                    if (empty > 0) {
+                        fen += empty
+                    }
+                    return fen
+                },
+                set(fen) {
+                    let pos = 0
+                    for (let i = 0; pos < 64; i++) {
+                        const symbol = fen[i]
+                        if (piecesMap[symbol]) {
+                            this.$set(this.cells, pos, {...piecesMap[symbol], class: {}})
                             pos++
+                        } else if ("12345678".includes(symbol)) {
+                            const skip = parseInt(symbol)
+                            for (let j = 0; j < skip; j++) {
+                                this.$set(this.cells, pos, {...piecesMap.blank, class: {}})
+                                pos++
+                            }
                         }
                     }
                 }
-                this.highlightAvailableActions()
             },
-            extractFen() {
-                let fen = ''
-                let empty = 0
-                let column = 0
-                for (let i = 0; i < this.cells.length; i++) {
-                    if (column === 8) {
-                        if (empty > 0) {
-                            fen += empty
-                            empty = 0
-                        }
-                        fen += '/'
-                        column = 0
-                    }
-                    column++
-                    const cell = this.cells[i]
-                    if (cell.key !== ' ') {
-                        if (empty > 0) {
-                            fen += empty
-                            empty = 0
-                        }
-                        fen += cell.key
-                    } else {
-                        empty++
-                    }
-                }
-                if (empty > 0) {
-                    fen += empty
-                }
-                return fen
-            },
+        },
+        methods: {
             cellClick(e) {
                 const targetCellNumber = e.target.dataset.number
-                if (this.draggedNumber === null && this.cells[targetCellNumber].key !== ' ') {
+                const targetCell = this.cells[targetCellNumber]
+                if (this.draggedNumber === null && targetCell.key !== piecesMap.blank.key) { // Clicked piece, no dragged
                     this.draggedNumber = targetCellNumber
-                    let draggedPiece = this.cells[this.draggedNumber]
-                    draggedPiece.class['selected'] = true
-                    this.$set(this.cells, this.draggedNumber, draggedPiece)
-                } else if (this.draggedNumber === targetCellNumber) {
-                    let draggedPiece = this.cells[this.draggedNumber]
-                    draggedPiece.class['available-move-to'] = false
-                    draggedPiece.class['available-move-from'] = false
-                    draggedPiece.class['selected'] = false
-                    this.$set(this.cells, this.draggedNumber, draggedPiece)
+                } else if (this.draggedNumber === targetCellNumber) { // Clicked dragged piece
                     this.draggedNumber = null
-                } else if (this.cells[targetCellNumber].class['available-move-to']) {
+                } else if (targetCell.class['available-move-to']) { // Clicked cell with valid move
                     const fromCellNumber = this.draggedNumber
                     this.movePiece(fromCellNumber, targetCellNumber)
                     this.draggedNumber = null
@@ -127,47 +118,37 @@
             },
             highlightAvailableActions() {
                     for (let i = 0; i < 64; i++) {
-                        if (i == this.draggedNumber)
+                        if (i == this.draggedNumber) // The piece being dragged -> ignore
                             continue
 
-                        let cell = this.cells[i]
-                        if (this.draggedNumber !== null) {
-                            if (cell.key === ' ') {
+                        const cell = this.cells[i]
+                        if (this.draggedNumber !== null) { // Some piece being dragged now
+                            if (cell.key === piecesMap.blank.key) { // Empty cell -> possible move
                                 cell.class['available-move-to'] = true
-                                this.$set(this.cells, i, cell)
-                            } else {
+                            } else { // Not empty cell -> invalid move
                                 cell.class['available-move-to'] = false
                                 cell.class['available-move-from'] = false
-                                cell.class['selected'] = false
-                                this.$set(this.cells, i, cell)
                             }
-                        } else {
-                            if (cell.key === ' ') {
+                        } else { // No piece being dragged now
+                            if (cell.key === piecesMap.blank.key) { // Empty cell -> can't drag this
                                 cell.class['available-move-to'] = false
                                 cell.class['available-move-from'] = false
-                                cell.class['selected'] = false
-                                this.$set(this.cells, i, cell)
-                            } else {
+                            } else { // Not empty cell -> can drag this
                                 cell.class['available-move-from'] = true
-                                this.$set(this.cells, i, cell)
                             }
                         }
+                        this.$set(this.cells, i, cell)
                     }
             },
             movePiece(fromCellNumber, toCellNumber) {
-                const blank = this.piecesMap[' ']
-                const fromCell = this.cells[fromCellNumber]
                 for (let i = 0; i < 64; i++) {
                     let cell = this.cells[i]
                     cell.class['last-move-from'] = false
                     cell.class['last-move-to'] = false
                     this.$set(this.cells, i, cell)
                 }
-                this.$set(this.cells, toCellNumber,
-                    {key: fromCell.key, name: fromCell.name, color: fromCell.color, class: {'last-move-to': true}})
-                this.$set(this.cells, fromCellNumber,
-                    {key: blank.key, name: blank.name, color: blank.color, class: {'last-move-from': true}})
-                this.fen = this.extractFen()
+                this.$set(this.cells, toCellNumber, {...this.cells[fromCellNumber], class: {'last-move-to': true}})
+                this.$set(this.cells, fromCellNumber, {...piecesMap.blank, class: {'last-move-from': true}})
                 this.moveHistory.unshift({from: fromCellNumber, to: toCellNumber})
             },
             connect() {
@@ -179,7 +160,7 @@
                     console.log('Connected: ' + frame)
                     stompClient.subscribe(gameSocketUrl, function (message) {
                         if (message.body.startsWith('BOARD:')) {
-                            ctx.applyFen(message.body.substring(6));
+                           this.fen = message.body.substring(6);
                         } else if (message.body.startsWith('MOVE:')) {
                             ctx.movePiece(message.body.substring(5).split(',')[0], message.body.substring(5).split(',')[1])
                         }
@@ -191,13 +172,13 @@
             }
         },
         created() {
-            const blank = this.piecesMap[' ']
             for (let i = 0; i < 64; i++) {
-                this.cells[i] = {key: blank.key, name: blank.name, color: blank.color, class: {}}
+                this.cells[i] = {...piecesMap.blank, class: {}}
             }
         },
         mounted() {
-            this.applyFen('rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR')
+            this.fen = 'rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR'
+            this.highlightAvailableActions()
         },
     }
 </script>
@@ -219,6 +200,9 @@
     .selected {
         background: rgba(247, 238, 35, 0.69) !important;
         cursor: pointer;
+    }
+    .selected:hover {
+        background: rgb(62, 128, 20) !important; /* Copy of available-move-to */
     }
     .available-move-from:hover {
         background: rgba(0, 128, 0, 0.2) !important;
