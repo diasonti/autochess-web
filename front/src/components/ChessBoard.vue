@@ -19,9 +19,8 @@
 </template>
 
 <script>
-    import SockJs from 'sockjs-client'
-    import Stomp from 'stompjs'
     import Piece from './Piece'
+    import {apiUrl} from '../config'
     import {piecesMap} from '../utils/chessPieces'
     import {cellNumbers} from '../utils/cellNumbers'
 
@@ -154,19 +153,35 @@
             },
             connect() {
                 const ctx = this
-                const gameSocketUrl = '/topic/test'
-                const socket = new SockJs('http://localhost:5000/ws')
-                const stompClient = Stomp.over(socket)
-                stompClient.connect({}, function (frame) {
-                    console.log('Connected: ' + frame)
-                    stompClient.subscribe(gameSocketUrl, function (message) {
-                        if (message.body.startsWith('BOARD:')) {
-                           this.fen = message.body.substring(6);
-                        } else if (message.body.startsWith('MOVE:')) {
-                            ctx.movePiece(message.body.substring(5).split(',')[0], message.body.substring(5).split(',')[1])
-                        }
+                // Server-side events receiving
+                this.$sse(apiUrl + '/test/moves?startingFen=' + ctx.fen, {format: 'json'}) // or {format: 'plain'}
+                    .then(sse => {
+                        console.log('sse: ', sse)
+                        // Catch any errors (ie. lost connections, etc.)
+                        sse.onError(e => {
+                            console.error('SSE Error', e);
+                        });
+
+                        sse.subscribe('move', data => {
+                            console.info('Received a message with event: move', data);
+                            ctx.movePiece(data.from, data.to)
+                        });
+
+                        sse.subscribe('close', data => {
+                            console.info('Received a message with event: close', data);
+                            sse.close();
+                        });
+
+                        // Listen for messages without a specified event
+                        sse.subscribe('', data => {
+                            console.warn('Received a message w/o an event!', data);
+                        });
                     })
-                })
+                    .catch(err => {
+                        // When this error is caught, it means the initial connection to the
+                        // events server failed.  No automatic attempts to reconnect will be made.
+                        console.error('Failed to connect to server', err);
+                    });
             },
             cellNumber(row, col) {
                 return cellNumbers[row][col]

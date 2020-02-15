@@ -2,8 +2,9 @@ import Vue from 'vue'
 import VueAxios from 'vue-axios'
 import axios from 'axios'
 import store from './store'
+import {apiUrl} from './config'
 
-axios.defaults.baseURL = 'http://localhost:8080'
+axios.defaults.baseURL = apiUrl
 axios.defaults.withCredentials = true
 
 axios.interceptors.request.use((config) => {

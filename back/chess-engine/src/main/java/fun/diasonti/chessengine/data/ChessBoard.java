@@ -18,6 +18,9 @@ public class ChessBoard {
     public long blackKnights;
     public long blackPawns;
 
+    public Color currentPlayer = Color.WHITE;
+    public int moveCount = 0;
+
     public long getWhitePieces() {
         return whiteKings | whiteQueens | whiteRooks | whiteBishops | whiteKnights | whitePawns;
     }
@@ -48,6 +51,8 @@ public class ChessBoard {
         copy.blackBishops = this.blackBishops;
         copy.blackKnights = this.blackKnights;
         copy.blackPawns = this.blackPawns;
+        copy.currentPlayer = this.currentPlayer;
+        copy.moveCount = this.moveCount;
         return copy;
     }
 

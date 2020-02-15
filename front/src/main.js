@@ -5,6 +5,9 @@ import store from './store'
 import './api'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import VueSSE from 'vue-sse'
+
+Vue.use(VueSSE);
 
 window.$ = require('jquery')
 window.JQuery = require('jquery')
