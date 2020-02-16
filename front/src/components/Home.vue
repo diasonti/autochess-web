@@ -70,6 +70,8 @@
 </template>
 
 <script>
+    import {apiMap, baseUrl} from '../config'
+
     export default {
         name: 'Home',
         data() {
@@ -93,21 +95,65 @@
             },
         },
         methods: {
-            startSearch() {
-                this.searchStopwatchSeconds = 0
-                this.searchTitle = 'Searching for an opponent'
-                this.searchStopwatchInterval = setInterval(() => {
-                    this.searchStopwatchSeconds++
-                    if (this.searchTitle.endsWith('.....')) {
+            startSearchListening(searchToken) {
+                this.$sse(baseUrl + apiMap.gameSearchSseStream + '?token=' + searchToken, {format: 'json'}) // or {format: 'plain'}
+                    .then((sse) => {
+                        this.searchStopwatchSeconds = 0
                         this.searchTitle = 'Searching for an opponent'
-                    } else {
-                        this.searchTitle += '.'
-                    }
-                }, 1000)
+                        this.searchStopwatchInterval = setInterval(() => {
+                            this.searchStopwatchSeconds++
+                            if (this.searchTitle.endsWith('.....')) {
+                                this.searchTitle = 'Searching for an opponent'
+                            } else {
+                                this.searchTitle += '.'
+                            }
+                        }, 1000)
+                        // Catch any errors (ie. lost connections, etc.)
+                        sse.onError((e) => {
+                            console.error('SSE Listening error', e)
+                            this.stopSearch()
+                            sse.close()
+                        })
+
+                        sse.subscribe('search', (data) => {
+                            console.info('SSE Received a message with event: search', data)
+                        })
+
+                        sse.subscribe('game', (data) => {
+                            console.info('SSE Received a message with event: game', data)
+                            this.handleFoundGame(data['gameId'])
+                            sse.close()
+                        })
+
+                        // Listen for messages without a specified event
+                        sse.subscribe('', (data) => {
+                            console.warn('SSE Received a message w/o an event!', data)
+                        })
+                    })
+                    .catch((error) => {
+                        // When this error is caught, it means the initial connection to the
+                        // events server failed.  No automatic attempts to reconnect will be made.
+                        console.error('SSE Failed to connect to server', error)
+                    })
+            },
+            startSearch() {
+                this.axios.get(baseUrl + apiMap.gameSearchGetToken)
+                    .then((response) => {
+                        const searchToken = response.data.token
+                        this.startSearchListening(searchToken)
+                    })
+                    .catch((error) => {
+                        console.error('searchToken error', error)
+                    })
             },
             stopSearch() {
                 clearInterval(this.searchStopwatchInterval)
                 this.searchStopwatchInterval = null
+            },
+            handleFoundGame(gameId) {
+                this.stopSearch()
+                console.log('Game found ', gameId)
+                // TODO: Redirect to the game component
             },
             alert: (message) => alert(message),
         },
