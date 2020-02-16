@@ -20,7 +20,7 @@
 
 <script>
     import Piece from './Piece'
-    import {apiUrl} from '../config'
+    import {baseUrl} from '../config'
     import {piecesMap} from '../utils/chessPieces'
     import {cellNumbers} from '../utils/cellNumbers'
 
@@ -154,7 +154,7 @@
             connect() {
                 const ctx = this
                 // Server-side events receiving
-                this.$sse(apiUrl + '/test/moves?startingFen=' + ctx.fen, {format: 'json'}) // or {format: 'plain'}
+                this.$sse(baseUrl + '/test/moves?startingFen=' + ctx.fen, {format: 'json'}) // or {format: 'plain'}
                     .then(sse => {
                         console.log('sse: ', sse)
                         // Catch any errors (ie. lost connections, etc.)

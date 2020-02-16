@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from './views/Index'
-import Pieces from './views/Pieces'
+import ChessBoard from './components/ChessBoard'
+import Login from './components/Login'
 
 Vue.use(Router)
 
@@ -15,9 +16,14 @@ const router = new Router({
       component: Index
     },
     {
-      path: '/pieces',
-      name: 'pieces',
-      component: Pieces
+      path: '/board',
+      name: 'board',
+      component: ChessBoard
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
     },
   ],
   scrollBehavior (to, from, savedPosition) {

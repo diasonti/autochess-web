@@ -2,17 +2,18 @@ import Vue from 'vue'
 import VueAxios from 'vue-axios'
 import axios from 'axios'
 import store from './store'
-import {apiUrl} from './config'
+import {baseUrl} from './config'
 
-axios.defaults.baseURL = apiUrl
-axios.defaults.withCredentials = true
+axios.defaults.baseURL = baseUrl
+axios.defaults.withCredentials = false
 
-axios.interceptors.request.use((config) => {
-    if (store.getters.token) {
-        config.headers.common['Authorization'] = 'Basic ' + store.getters.token
+axios.interceptors.request.use((request) => {
+    if (store.getters.getToken) {
+        request.headers.common['Authorization'] = 'Bearer ' + store.getters.getToken
     }
-    return config
+    return request
 }, (error) => {
+    console.error('Axios request error:', error)
     return Promise.reject(error)
 });
 

@@ -1,65 +1,63 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import {apiMap} from './config'
 
 Vue.use(Vuex)
 
-const state = {
-  token: localStorage.getItem('auth_token'),
-  user: null
+const initialState = {
+    token: localStorage.getItem('auth_token'),
+    error: null,
 }
 
 const getters = {
-  token: state => {
-    return state.token
-  },
-  user: state => {
-    return state.user
-  }
+    getToken: (state) => state.token,
+    getError: (state) => state.error,
 }
 
 const mutations = {
-  LOGIN_SUCCESS (state, token) {
-    state.token = token
-  },
-  LOGIN_FAILURE (state, error) {
-    state.token = null
-  },
-  LOGOUT (state) {
-    state.token = null
-  }
+    loginSuccess(state, {token}) {
+        localStorage.setItem('auth_token', token)
+        state.token = token
+        state.error = null
+    },
+    loginFailure(state, {error}) {
+        state.token = null
+        state.error = error
+    },
+    logout(state) {
+        localStorage.removeItem('auth_token')
+        state.token = null
+    },
 }
 
 const actions = {
-  checkCredentials (context, auth) {
-    const formData = new FormData()
-    formData.append('email', auth.email)
-    formData.append('password', auth.password)
-
-    return Vue.axios.post('/login', formData)
-        .then(response => {
-          if(response.data != null && response.data.endsWith("=")) {
-            localStorage.setItem('auth_token', response.data)
-            context.commit('LOGIN_SUCCESS', response.data)
-          } else {
-            const error = response.data;
-            context.commit('LOGIN_FAILURE', error)
-            throw error;
-          }
-        }).catch((error) => {
-          context.commit('LOGIN_FAILURE', error)
-          throw error
-        })
-  },
-  logOut (context) {
-    localStorage.removeItem('auth_token')
-    context.commit('LOGOUT');
-  }
+    setToken(context, {token}) {
+        context.commit('loginSuccess', {token: token})
+        setTimeout(() => {
+            context.dispatch('refreshToken')
+        }, 600000) // 10 minutes
+    },
+    setLoginError(context, {error}) {
+        context.commit('loginFailure', {error: error})
+    },
+    refreshToken(context) {
+        Vue.axios.post(apiMap.refreshToken)
+            .then(response => {
+                context.dispatch('setToken', {token: response.data.token})
+            })
+            .catch((error) => {
+                context.dispatch('setLoginError', {error: error})
+            })
+    },
+    logOut(context) {
+        context.commit('LOGOUT')
+    },
 }
 
 export default new Vuex.Store({
-  strict: process.env.NODE_ENV !== 'production',
-  state,
-  getters,
-  mutations,
-  actions
+    strict: process.env.NODE_ENV !== 'production',
+    state: initialState,
+    getters,
+    mutations,
+    actions,
 })

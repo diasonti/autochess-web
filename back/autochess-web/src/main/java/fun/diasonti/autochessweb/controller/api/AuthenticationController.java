@@ -1,15 +1,13 @@
 package fun.diasonti.autochessweb.controller.api;
 
+import fun.diasonti.autochessweb.config.security.jwt.JwtAuthenticationFilter;
 import fun.diasonti.autochessweb.config.security.jwt.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -38,4 +36,14 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> login(@RequestHeader(JwtAuthenticationFilter.HEADER_NAME) String header) {
+        try {
+            final String token = jwtService.generateToken(header.replace(JwtAuthenticationFilter.TOKEN_PREFIX, ""));
+            return ResponseEntity.ok(Collections.singletonMap("token", token));
+        } catch (Exception e) {
+            log.debug("Failed refresh attempt token=\"{}\"", header);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 }

@@ -24,8 +24,8 @@ public class JwtService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public JwtService(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        this.userDetailsService = userDetailsService;
+    public JwtService(UserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
+        this.userDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -34,6 +34,15 @@ public class JwtService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Wrong password");
         }
+        return JWT.create()
+                .withSubject(user.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis()))
+                .sign(HMAC512(secret.getBytes()));
+    }
+
+    public String generateToken(String oldToken) {
+        final String username = verifyToken(oldToken);
+        final UserDetails user = userDetailsService.loadUserByUsername(username);
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis()))

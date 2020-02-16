@@ -22,15 +22,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    private static final String HEADER_NAME = "Authorization";
-    private static final String TOKEN_PREFIX = "Bearer ";
+    public static final String HEADER_NAME = "Authorization";
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
     @Autowired
-    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtService jwtService) {
-        this.userDetailsService = userDetailsService;
+    public JwtAuthenticationFilter(UserDetailsService customUserDetailsService, JwtService jwtService) {
+        this.userDetailsService = customUserDetailsService;
         this.jwtService = jwtService;
     }
 
