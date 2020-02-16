@@ -1,13 +1,12 @@
 <template>
     <div>
-        Index component
+        Game component
     </div>
 </template>
 
 <script>
-
     export default {
-        name: 'Index',
+        name: 'Game',
     }
 </script>
 

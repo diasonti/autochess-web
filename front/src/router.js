@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from './views/Index'
 import ChessBoard from './components/ChessBoard'
 import Login from './components/Login'
+import Home from './components/Home'
 
 Vue.use(Router)
 
@@ -16,20 +17,27 @@ const router = new Router({
       component: Index
     },
     {
-      path: '/board',
-      name: 'board',
-      component: ChessBoard
-    },
-    {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
+      props: (route) => ({ query: route.query.back })
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/game/:gameId',
+      name: 'board',
+      component: ChessBoard,
+      props: true
     },
   ],
   scrollBehavior (to, from, savedPosition) {
     return savedPosition || { x: 0, y: 0 }
   },
-  linkActiveClass: 'is-active'
+  linkActiveClass: 'active'
 });
 
 export default router

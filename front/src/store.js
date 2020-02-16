@@ -5,52 +5,60 @@ import {apiMap} from './config'
 Vue.use(Vuex)
 
 const initialState = {
-    token: localStorage.getItem('auth_token'),
-    error: null,
+    authToken: localStorage.getItem('auth_token'),
+    authError: null,
 }
 
 const getters = {
-    getToken: (state) => state.token,
-    getError: (state) => state.error,
+    tokenGetter: (state) => state.authToken,
+    authErrorGetter: (state) => state.authError,
+    isAuthenticatedGetter: (state) => state.authToken && !state.authError,
 }
 
 const mutations = {
-    loginSuccess(state, {token}) {
-        localStorage.setItem('auth_token', token)
-        state.token = token
-        state.error = null
+    loginSuccessMutation(state, {token}) {
+        state.authToken = token
+        state.authError = null
     },
-    loginFailure(state, {error}) {
-        state.token = null
-        state.error = error
+    setAuthErrorMutation(state, {error}) {
+        state.authToken = null
+        state.authenticatedUser = null
+        state.authError = error
     },
-    logout(state) {
-        localStorage.removeItem('auth_token')
-        state.token = null
+    clearAuthErrorMutation(state) {
+        state.authError = null
     },
+    logoutMutation(state) {
+        state.authToken = null
+        state.authenticatedUser = null
+        state.authError = null
+    }
 }
 
 const actions = {
-    setToken(context, {token}) {
-        context.commit('loginSuccess', {token: token})
-        setTimeout(() => {
-            context.dispatch('refreshToken')
-        }, 600000) // 10 minutes
+    loginSuccessAction(context, {token}) {
+        localStorage.setItem('auth_token', token)
+        context.commit('loginSuccessMutation', {token})
     },
-    setLoginError(context, {error}) {
-        context.commit('loginFailure', {error: error})
+    loginErrorAction(context, {error}) {
+        if (error) {
+            context.commit('setAuthErrorMutation', {error})
+        } else {
+            context.commit('clearAuthErrorMutation')
+        }
     },
-    refreshToken(context) {
+    refreshTokenAction(context) {
         Vue.axios.post(apiMap.refreshToken)
             .then(response => {
-                context.dispatch('setToken', {token: response.data.token})
+                context.dispatch('loginSuccessAction', response.data)
             })
             .catch((error) => {
-                context.dispatch('setLoginError', {error: error})
+                context.dispatch('loginErrorAction', {error})
             })
     },
-    logOut(context) {
-        context.commit('LOGOUT')
+    logoutAction(context) {
+        localStorage.removeItem('auth_token')
+        context.commit('logoutMutation')
     },
 }
 

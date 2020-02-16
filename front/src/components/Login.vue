@@ -1,6 +1,6 @@
 <template>
     <form @submit="submitLogin">
-        <div class="alert alert-danger" role="alert" v-if="$store.getters.getError">
+        <div class="alert alert-danger" role="alert" v-if="$store.getters.authErrorGetter">
             Invalid username or password
         </div>
         <div class="form-group">
@@ -22,6 +22,7 @@
 
     export default {
         name: 'Login',
+        props: ['back'],
         data() {
             return {
                 loginUsername: '',
@@ -32,19 +33,33 @@
             submitLogin(e) {
                 e.preventDefault()
                 if (this.loginUsername.length === 0 || this.loginPassword.length === 0)
-                    return;
+                    return
                 const formData = new FormData()
                 formData.append('username', this.loginUsername)
                 formData.append('password', this.loginPassword)
                 this.axios.post(apiMap.login, formData)
                     .then(response => {
-                        this.$store.dispatch('setToken', {token: response.data.token})
-                        // this.$router.push({path: 'home'})
+                        this.$store.dispatch('loginSuccessAction', response.data)
+                        this.handleSuccessLogin()
                     })
                     .catch((error) => {
-                        this.$store.dispatch('setLoginError', {error: error})
+                        this.$store.dispatch('loginErrorAction', {error: error})
                     })
             },
+            handleSuccessLogin() {
+                if (this.back === 'history') {
+                    this.$router.go(-1)
+                } else if (this.back) {
+                    this.$router.go(this.back)
+                } else {
+                    this.$router.push('/home')
+                }
+            },
+        },
+        beforeRouteEnter(to, from, next) {
+            next(vm => {
+                vm.$store.dispatch('loginErrorAction', {error: null})
+            })
         },
     }
 </script>
