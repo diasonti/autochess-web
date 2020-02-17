@@ -3,30 +3,33 @@ package fun.diasonti.chessengine.engine;
 import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Move;
+import fun.diasonti.chessengine.engine.interfaces.EvaluationEngine;
+import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
 import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 
 import java.util.Set;
 
 public class MinimaxAlphaBetaSearchEngine implements SearchEngine {
 
-    private MaterialPositionalEvaluationEngine evaluationEngine;
-    private BitwiseOperationsMoveEngine moveEngine;
+    private EvaluationEngine evaluationEngine;
+    private MoveEngine moveEngine;
 
-    public MinimaxAlphaBetaSearchEngine() {
-        evaluationEngine = new MaterialPositionalEvaluationEngine();
-        moveEngine = new BitwiseOperationsMoveEngine();
-    }
-
-    public void setEvaluationEngine(MaterialPositionalEvaluationEngine evaluationEngine) {
+    public void setEvaluationEngine(EvaluationEngine evaluationEngine) {
         this.evaluationEngine = evaluationEngine;
     }
 
-    public void setMoveEngine(BitwiseOperationsMoveEngine moveEngine) {
+    public void setMoveEngine(MoveEngine moveEngine) {
         this.moveEngine = moveEngine;
     }
 
     @Override
     public Move getBestMove(ChessBoard board, Color color, int maxDepth) {
+        if (evaluationEngine == null) {
+            throw new IllegalStateException("Evaluation engine cannot be null");
+        }
+        if (moveEngine == null) {
+            throw new IllegalStateException("Move engine cannot be null");
+        }
         return minimaxAlphaBeta(board, color, 0, -10_000, 10_000, null, maxDepth);
     }
 

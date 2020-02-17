@@ -4,6 +4,7 @@ import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Move;
 import fun.diasonti.chessengine.util.BoardUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,6 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SearchEngineTest {
 
     private final MinimaxAlphaBetaSearchEngine searchEngine = new MinimaxAlphaBetaSearchEngine();
+
+    @BeforeEach
+    public void setUp() {
+        searchEngine.setMoveEngine(new BitwiseOperationsMoveEngine());
+        searchEngine.setEvaluationEngine(new MaterialPositionalEvaluationEngine());
+    }
 
     @Test
     public void testSearchMoveWhiteTest() {

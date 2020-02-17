@@ -7,8 +7,6 @@ import fun.diasonti.autochessweb.data.mappers.UserAccountMapper;
 import fun.diasonti.autochessweb.repository.UserAccountRepository;
 import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Move;
-import fun.diasonti.chessengine.engine.BitwiseOperationsMoveEngine;
-import fun.diasonti.chessengine.engine.MinimaxAlphaBetaSearchEngine;
 import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
 import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 import fun.diasonti.chessengine.util.BoardUtils;
@@ -25,10 +23,12 @@ import java.util.Random;
 @RequestMapping("/test")
 public class TestController {
 
-    private final MoveEngine moveEngine = new BitwiseOperationsMoveEngine();
-    private final SearchEngine searchEngine = new MinimaxAlphaBetaSearchEngine();
     private final Random random = new Random();
 
+    @Autowired
+    private MoveEngine moveEngine;
+    @Autowired
+    private SearchEngine searchEngine;
     @Autowired
     private UserAccountMapper userAccountMapper;
     @Autowired
