@@ -1,32 +1,33 @@
 package fun.diasonti.autochessweb.config.security;
 
+import fun.diasonti.autochessweb.config.security.data.AppUser;
+import fun.diasonti.autochessweb.data.entity.UserAccount;
+import fun.diasonti.autochessweb.data.form.UserAccountForm;
+import fun.diasonti.autochessweb.data.mappers.UserAccountMapper;
+import fun.diasonti.autochessweb.repository.UserAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final PasswordEncoder passwordEncoder;
+    private final UserAccountRepository userAccountRepository;
+    private final UserAccountMapper userAccountMapper;
 
     @Autowired
-    public CustomUserDetailsService(PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
+    public CustomUserDetailsService(UserAccountRepository userAccountRepository, UserAccountMapper userAccountMapper) {
+        this.userAccountRepository = userAccountRepository;
+        this.userAccountMapper = userAccountMapper;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        if (username.startsWith("user")) {
-            return new User(username, passwordEncoder.encode("123"), Collections.singletonList(new SimpleGrantedAuthority("USER")));
-        } else {
-            throw new UsernameNotFoundException("User not found");
-        }
+        final UserAccount userAccount = userAccountRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(""));
+        final UserAccountForm userAccountForm = userAccountMapper.entityToForm(userAccount);
+        return new AppUser(userAccountForm);
     }
 }

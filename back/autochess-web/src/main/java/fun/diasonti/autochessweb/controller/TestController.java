@@ -1,25 +1,24 @@
 package fun.diasonti.autochessweb.controller;
 
+import com.google.common.collect.ImmutableMap;
+import fun.diasonti.autochessweb.data.entity.UserAccount;
+import fun.diasonti.autochessweb.data.form.UserAccountForm;
+import fun.diasonti.autochessweb.data.mappers.UserAccountMapper;
+import fun.diasonti.autochessweb.repository.UserAccountRepository;
 import fun.diasonti.chessengine.data.ChessBoard;
-import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Move;
 import fun.diasonti.chessengine.engine.BitwiseOperationsMoveEngine;
 import fun.diasonti.chessengine.engine.MinimaxAlphaBetaSearchEngine;
 import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
 import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 import fun.diasonti.chessengine.util.BoardUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.Random;
 
 @RestController
@@ -30,64 +29,49 @@ public class TestController {
     private final SearchEngine searchEngine = new MinimaxAlphaBetaSearchEngine();
     private final Random random = new Random();
 
-    @GetMapping("")
-    public String test(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String fen) {
-//        websocket.convertAndSend("/topic/test", fen);
-        return fen;
-    }
+    @Autowired
+    private UserAccountMapper userAccountMapper;
+    @Autowired
+    private UserAccountRepository userAccountRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    @GetMapping("/game")
-    public String game(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String fen) {
-        new Thread(() -> {
-            final Random random = new Random();
-            Color player = Color.WHITE;
-            ChessBoard board = BoardUtils.fenToBitboard(fen);
-//            websocket.convertAndSend("/topic/test", "BOARD:" + BoardUtils.bitboardToFen(board));
-            for (int i = 0; i < 50; i++) {
-                try {
-                    Thread.sleep(250L);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                final Move move = searchEngine.getBestMove(board, player, random.nextInt(4) + 1);
-//                websocket.convertAndSend("/topic/test", "MOVE:" + Long.numberOfTrailingZeros(move.from) + "," + Long.numberOfTrailingZeros(move.to));
-                board = moveEngine.makeMove(board, move);
-                player = player.getOpposite();
-            }
-        }).start();
-        return fen;
+    @PostMapping("/user/create")
+    public UserAccountForm createUser(UserAccountForm form) {
+        UserAccount entity = userAccountMapper.formToEntity(form);
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        entity = userAccountRepository.save(entity);
+        return userAccountMapper.entityToForm(entity);
     }
 
     @GetMapping("/board")
-    public Mono<String> board(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String fen) {
-        return Mono.just(fen);
+    public String board(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String fen) {
+        return fen;
     }
 
     @GetMapping(value = "/moves", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Object> moves(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String startingFen) {
-        return Flux.generate(
-                () -> BoardUtils.fenToBitboard(startingFen),
-                (board, sink) -> {
-                    if (board.moveCount == 5) {
-                        sink.complete();
-                        return null;
-                    }
-                    final Move bestMove = searchEngine.getBestMove(board, board.currentPlayer, random.nextInt(4) + 1);
-                    sink.next(bestMove);
+    public SseEmitter moves(@RequestParam(defaultValue = "rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ1BNR") String startingFen) {
+        final SseEmitter emitter = new SseEmitter();
+        new Thread(() -> {
+            try {
+                ChessBoard board = BoardUtils.fenToBitboard(startingFen);
+                for (int i = 0; i < 5; i++) {
+                    final Move move = searchEngine.getBestMove(board, board.currentPlayer, random.nextInt(4) + 1);
                     board.currentPlayer = board.currentPlayer.getOpposite();
                     board.moveCount++;
-                    return moveEngine.makeMove(board, bestMove);
-                }).cast(Move.class)
-                .map(move -> {
-                    Map<String, Integer> map = new HashMap<>();
-                    map.put("from", Long.numberOfTrailingZeros(move.from));
-                    map.put("to", Long.numberOfTrailingZeros(move.to));
-                    return map;
-                })
-                .map(move -> ServerSentEvent.builder(move).event("move").build())
-                .cast(Object.class)
-                .concatWith(Flux.just(ServerSentEvent.builder().event("close").data("null").build()))
-                .delayElements(Duration.ofSeconds(1));
+                    emitter.send(SseEmitter.event().name("move").data(ImmutableMap.of("from", Long.numberOfTrailingZeros(move.from), "to", Long.numberOfTrailingZeros(move.to))));
+                    board = moveEngine.makeMove(board, move);
+                    Thread.sleep(1000L);
+                }
+                emitter.send(SseEmitter.event().name("close").data("null"));
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            } catch (InterruptedException e) {
+                emitter.completeWithError(e);
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+        return emitter;
     }
 
 }
