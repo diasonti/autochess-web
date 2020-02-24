@@ -2,6 +2,7 @@ package fun.diasonti.autochessweb.config;
 
 import fun.diasonti.autochessweb.config.utils.AppUserArgumentResolver;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebMvc
+@EnableScheduling
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override

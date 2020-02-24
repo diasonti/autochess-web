@@ -1,6 +1,10 @@
 package fun.diasonti.chessengine.data;
 
-public class ChessBoard {
+import java.io.Serializable;
+
+public class ChessBoard implements Serializable {
+
+    private static final long serialVersionUID = 7490760142489959L;
 
     public static final int SIZE = 64;
 

@@ -10,6 +10,8 @@ import fun.diasonti.chessengine.data.Move;
 import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
 import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 import fun.diasonti.chessengine.util.BoardUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,8 @@ import java.util.Random;
 @RestController
 @RequestMapping("/test")
 public class TestController {
+
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
 
     private final Random random = new Random();
 
@@ -64,6 +68,30 @@ public class TestController {
                     Thread.sleep(1000L);
                 }
                 emitter.send(SseEmitter.event().name("close").data("null"));
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            } catch (InterruptedException e) {
+                emitter.completeWithError(e);
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+        return emitter;
+    }
+
+    @GetMapping(value = "/infinity", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter infinity() {
+        final SseEmitter emitter = new SseEmitter();
+        new Thread(() -> {
+            try {
+                emitter.onCompletion(() -> log.info("infinity OnCompletion"));
+                emitter.onError(throwable -> log.info("infinity error", throwable));
+                for (int i = 0; i < Integer.MAX_VALUE; i++) {
+                    log.info("infinity ping");
+                    emitter.send(SseEmitter.event().name("ping").data("null"));
+                    Thread.sleep(1_000L);
+                }
+                log.info("infinity send");
+                emitter.complete();
             } catch (IOException e) {
                 emitter.completeWithError(e);
             } catch (InterruptedException e) {
