@@ -14,7 +14,7 @@ public class ActiveGameEngine {
 
     private Map<String, ActiveGame> activeGames = new HashMap<>();
 
-    public String createGame(UserAccountForm player1, UserAccountForm player2) {
+    public String startGame(UserAccountForm player1, UserAccountForm player2) {
         final ActiveGame game = new ActiveGame();
         game.setBoard(new ChessBoard());
         if (Math.random() > 0.5) {
