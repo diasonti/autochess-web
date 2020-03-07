@@ -1,13 +1,10 @@
 package fun.diasonti.autochessweb;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
+//@SpringBootTest
 public class AutochessWebApplicationTest {
 
-    @Test
-    public void testContextLoads() {
-    }
+//    @Test
+//    public void testContextLoads() {
+//    }
 
 }
