@@ -1,6 +1,7 @@
 package fun.diasonti.autochessweb.config.security.jwt;
 
 import com.auth0.jwt.JWT;
+import fun.diasonti.autochessweb.engine.MatchmakingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,11 +21,13 @@ public class JwtService {
     @Value("${jwt.secret:secret}")
     private String secret;    //retrieve username from jwt token
 
+    private final MatchmakingService matchmakingService;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public JwtService(UserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
+    public JwtService(MatchmakingService matchmakingService, UserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
+        this.matchmakingService = matchmakingService;
         this.userDetailsService = customUserDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -36,6 +39,7 @@ public class JwtService {
         }
         return JWT.create()
                 .withSubject(user.getUsername())
+                .withClaim("searchToken", matchmakingService.getMatchmakingToken(user.getUsername()))
                 .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis()))
                 .sign(HMAC512(secret.getBytes()));
     }
