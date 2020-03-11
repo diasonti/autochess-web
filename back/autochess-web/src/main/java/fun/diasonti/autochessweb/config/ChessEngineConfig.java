@@ -1,4 +1,4 @@
-package fun.diasonti.autochessweb.engine;
+package fun.diasonti.autochessweb.config;
 
 import fun.diasonti.chessengine.engine.BitwiseOperationsMoveEngine;
 import fun.diasonti.chessengine.engine.MaterialPositionalEvaluationEngine;
