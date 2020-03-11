@@ -18,27 +18,15 @@ public abstract class BaseForm implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-        final BaseForm other = (BaseForm) obj;
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            } else {
-                return super.equals(obj);
-            }
-        } else {
-            return id.equals(other.id);
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BaseForm baseForm = (BaseForm) o;
+        return Objects.equals(id, baseForm.id);
     }
 
     @Override
     public int hashCode() {
-        if (id == null)
-            return super.hashCode();
         return Objects.hash(id);
     }
 }
