@@ -3,7 +3,7 @@ package fun.diasonti.autochessweb.controller.api;
 import fun.diasonti.autochessweb.config.security.data.AppUser;
 import fun.diasonti.autochessweb.data.exceptions.InvalidSearchTokenException;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
-import fun.diasonti.autochessweb.engine.MatchmakingSearchEngine;
+import fun.diasonti.autochessweb.engine.MatchmakingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +30,11 @@ public class MatchmakingController {
     private final ExecutorService searchThreadPool = Executors.newCachedThreadPool();
     private final Map<String, UserAccountForm> searchTokens = Collections.synchronizedMap(new HashMap<>());
 
-    private final MatchmakingSearchEngine searchEngine;
+    private final MatchmakingService matchmakingService;
 
     @Autowired
-    public MatchmakingController(MatchmakingSearchEngine searchEngine) {
-        this.searchEngine = searchEngine;
+    public MatchmakingController(MatchmakingService matchmakingService) {
+        this.matchmakingService = matchmakingService;
     }
 
     @GetMapping("/search/token")
@@ -49,6 +49,7 @@ public class MatchmakingController {
         final SseEmitter emitter = new SseEmitter();
         searchThreadPool.execute(() -> {
             final UserAccountForm user = searchTokens.get(token);
+            matchmakingService.addToSearchQueue(user);
             try {
                 if (user == null) {
                     throw new InvalidSearchTokenException();
@@ -61,7 +62,7 @@ public class MatchmakingController {
                 emitter.completeWithError(e);
             } catch (Exception e) {
                 log.error("Search SSE emitter error", e);
-                searchEngine.remove(user);
+                matchmakingService.removeFromSearchQueue(user);
                 emitter.completeWithError(e);
             }
         });
