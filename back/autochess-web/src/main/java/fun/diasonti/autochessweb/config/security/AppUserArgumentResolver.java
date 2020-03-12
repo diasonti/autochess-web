@@ -1,4 +1,4 @@
-package fun.diasonti.autochessweb.config.utils;
+package fun.diasonti.autochessweb.config.security;
 
 import fun.diasonti.autochessweb.config.security.data.AppUser;
 import org.springframework.core.MethodParameter;
@@ -19,11 +19,12 @@ public class AppUserArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AppUser user = null;
         if (authentication != null) {
             final Object principal = authentication.getPrincipal();
             if (principal instanceof AppUser)
-                return principal;
+                user = (AppUser) principal;
         }
-        throw new IllegalStateException("Cannot extract current user");
+        return user;
     }
 }

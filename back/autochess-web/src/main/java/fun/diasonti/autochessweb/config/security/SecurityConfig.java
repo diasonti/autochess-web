@@ -28,13 +28,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .cors()
-                .and()
                 .authorizeRequests()
                 .antMatchers("/test/**").permitAll()
                 .antMatchers("/api/auth/login").anonymous()
-                .antMatchers("/api/auth/refresh").authenticated()
-                .antMatchers("/api/matchmaking/search/stream").permitAll()
+                .antMatchers("/api/auth/logout").authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -1,62 +1,56 @@
 package fun.diasonti.autochessweb.config.security.jwt;
 
 import com.auth0.jwt.JWT;
-import fun.diasonti.autochessweb.engine.MatchmakingService;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fun.diasonti.autochessweb.config.security.data.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
 @Component
 public class JwtService {
 
-    @Value("${jwt.secret:secret}")
-    private String secret;    //retrieve username from jwt token
+    private final String secret;
+    private final long tokenMaxAge;
 
-    private final MatchmakingService matchmakingService;
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
+    private final JWTVerifier jwtVerifier;
 
     @Autowired
-    public JwtService(MatchmakingService matchmakingService, UserDetailsService customUserDetailsService, PasswordEncoder passwordEncoder) {
-        this.matchmakingService = matchmakingService;
-        this.userDetailsService = customUserDetailsService;
-        this.passwordEncoder = passwordEncoder;
+    public JwtService(@Value("${jwt.secret:secret}") String secret,
+                      @Value("${jwt.maxAge:604800}") long tokenMaxAge,
+                      ObjectMapper objectMapper) {
+        this.secret = secret;
+        this.tokenMaxAge = tokenMaxAge;
+        this.objectMapper = objectMapper;
+        this.jwtVerifier = JWT.require(HMAC512(this.secret.getBytes())).build();
     }
 
-    public String generateToken(String username, String password) {
-        final UserDetails user = userDetailsService.loadUserByUsername(username);
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("Wrong password");
-        }
+    public String generateToken(AppUser user) {
         return JWT.create()
                 .withSubject(user.getUsername())
-                .withClaim("searchToken", matchmakingService.getMatchmakingToken(user.getUsername()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis()))
+                .withArrayClaim("authorities", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(String[]::new))
+                .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofSeconds(tokenMaxAge).toMillis()))
                 .sign(HMAC512(secret.getBytes()));
     }
 
-    public String generateToken(String oldToken) {
-        final String username = verifyToken(oldToken);
-        final UserDetails user = userDetailsService.loadUserByUsername(username);
-        return JWT.create()
-                .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis()))
-                .sign(HMAC512(secret.getBytes()));
+    public AppUser parseToken(String token) {
+        final DecodedJWT decodedJWT = jwtVerifier.verify(token);
+        final String username = decodedJWT.getSubject();
+        final List<String> authorities = decodedJWT.getClaim("authorities").asList(String.class);
+        return new AppUser(username, authorities);
     }
 
-    public String verifyToken(String token) {
-        return JWT.require(HMAC512(secret.getBytes())).build()
-                .verify(token)
-                .getSubject();
+    public long getTokenMaxAge() {
+        return tokenMaxAge;
     }
-
 }

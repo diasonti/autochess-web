@@ -1,20 +1,26 @@
 package fun.diasonti.autochessweb.config.security.data;
 
-import com.google.common.collect.ImmutableSet;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.ImmutableList;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+@JsonIgnoreProperties({"password", "accountNonExpired", "accountNonLocked", "credentialsNonExpired", "enabled"})
 public class AppUser extends User {
 
-    private final UserAccountForm userAccount;
-
     public AppUser(UserAccountForm userAccount) {
-        super(userAccount.getUsername(), userAccount.getPassword(), ImmutableSet.of(new SimpleGrantedAuthority("USER")));
-        this.userAccount = userAccount;
+        this(userAccount.getUsername(), userAccount.getPassword(), ImmutableList.of("PLAYER"));
     }
 
-    public UserAccountForm getUserAccount() {
-        return userAccount;
+    public AppUser(String username, Collection<String> authorities) {
+        this(username, "[PROTECTED]", authorities);
+    }
+
+    public AppUser(String username, String password, Collection<String> authorities) {
+        super(username, password, authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet()));
     }
 }
