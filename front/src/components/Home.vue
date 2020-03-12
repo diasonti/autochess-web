@@ -26,7 +26,7 @@
                 <div class="card" style="height: 100%">
                     <div class="card-body">
                         <h5 class="card-title">{{ player.username }}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Rank: {{ player.rank }}</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">Rank: {{ 322 }}</h6>
                     </div>
                 </div>
             </div>
@@ -79,10 +79,6 @@
                 searchTitle: 'Searching for an opponent',
                 searchStopwatchSeconds: 5000,
                 searchStopwatchInterval: null,
-                player: {
-                    username: 'Edward',
-                    rank: 1225,
-                },
                 gameHistory: [
                     {id: 21, opponent: 'Mark', win: true, rankDelta: 25, rank: 1225},
                     {id: 17, opponent: 'Jacob', win: false, rankDelta: -20, rank: 1200},
@@ -90,6 +86,9 @@
             }
         },
         computed: {
+            player() {
+                return this.$store.getters.authenticatedUserGetter
+            },
             searchInProgress() {
                 return this.searchStopwatchInterval !== null
             },

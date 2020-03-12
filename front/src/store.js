@@ -5,60 +5,57 @@ import {apiMap} from './config'
 Vue.use(Vuex)
 
 const initialState = {
-    authToken: localStorage.getItem('auth_token'),
+    authenticatedUser: null,
     authError: null,
 }
 
 const getters = {
-    tokenGetter: (state) => state.authToken,
+    isAuthenticatedGetter: (state) => !!state.authenticatedUser,
+    authenticatedUserGetter: (state) => state.authenticatedUser,
     authErrorGetter: (state) => state.authError,
-    isAuthenticatedGetter: (state) => state.authToken && !state.authError,
 }
 
 const mutations = {
-    loginSuccessMutation(state, {token}) {
-        state.authToken = token
+    fetchSessionMutation(state, {user}) {
+        state.authenticatedUser = user
         state.authError = null
     },
-    setAuthErrorMutation(state, {error}) {
-        state.authToken = null
+    logOutMutation(state) {
         state.authenticatedUser = null
+        state.authError = null
+    },
+    authErrorMutation(state, {error}) {
         state.authError = error
+        if (error) {
+            state.authenticatedUser = null
+        }
     },
-    clearAuthErrorMutation(state) {
-        state.authError = null
-    },
-    logoutMutation(state) {
-        state.authToken = null
-        state.authenticatedUser = null
-        state.authError = null
-    }
 }
 
 const actions = {
-    loginSuccessAction(context, {token}) {
-        localStorage.setItem('auth_token', token)
-        context.commit('loginSuccessMutation', {token})
-    },
-    loginErrorAction(context, {error}) {
-        if (error) {
-            context.commit('setAuthErrorMutation', {error})
-        } else {
-            context.commit('clearAuthErrorMutation')
-        }
-    },
-    refreshTokenAction(context) {
-        Vue.axios.post(apiMap.refreshToken)
-            .then(response => {
-                context.dispatch('loginSuccessAction', response.data)
+    fetchSessionAction(context) {
+        Vue.axios.get(apiMap.fetch)
+            .then((response) => {
+                context.commit('fetchSessionMutation', {user: response.data})
             })
             .catch((error) => {
-                context.dispatch('loginErrorAction', {error})
+                context.commit('logOutMutation', {error: error.response})
             })
     },
+    loginSuccessAction(context) {
+        context.dispatch('fetchSessionAction')
+    },
+    setAuthErrorAction(context, {error}) {
+        context.commit('authErrorMutation', {error})
+    },
+    clearAuthErrorAction(context) {
+        context.commit('authErrorMutation', {error: null})
+    },
     logoutAction(context) {
-        localStorage.removeItem('auth_token')
-        context.commit('logoutMutation')
+        Vue.axios.post(apiMap.logout)
+            .then((response) => {
+                context.commit('logOutMutation')
+            })
     },
 }
 

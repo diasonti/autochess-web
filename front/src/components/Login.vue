@@ -38,12 +38,12 @@
                 formData.append('username', this.loginUsername)
                 formData.append('password', this.loginPassword)
                 this.axios.post(apiMap.login, formData)
-                    .then(response => {
-                        this.$store.dispatch('loginSuccessAction', response.data)
+                    .then((response) => {
+                        this.$store.dispatch('loginSuccessAction', {user: response.data})
                         this.handleSuccessLogin()
                     })
                     .catch((error) => {
-                        this.$store.dispatch('loginErrorAction', {error: error})
+                        this.$store.dispatch('setAuthErrorAction', {error: error.response})
                     })
             },
             handleSuccessLogin() {
@@ -58,7 +58,7 @@
         },
         beforeRouteEnter(to, from, next) {
             next(vm => {
-                vm.$store.dispatch('loginErrorAction', {error: null})
+                vm.$store.dispatch('clearAuthErrorAction')
             })
         },
     }

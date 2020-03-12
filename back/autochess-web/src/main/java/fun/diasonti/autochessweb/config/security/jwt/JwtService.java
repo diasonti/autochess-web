@@ -26,8 +26,8 @@ public class JwtService {
     private final JWTVerifier jwtVerifier;
 
     @Autowired
-    public JwtService(@Value("${jwt.secret:secret}") String secret,
-                      @Value("${jwt.maxAge:604800}") long tokenMaxAge,
+    public JwtService(@Value("${jwt.secret}") String secret,
+                      @Value("${jwt.maxAge}") long tokenMaxAge,
                       ObjectMapper objectMapper) {
         this.secret = secret;
         this.tokenMaxAge = tokenMaxAge;

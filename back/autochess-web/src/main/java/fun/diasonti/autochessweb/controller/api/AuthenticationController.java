@@ -1,42 +1,42 @@
 package fun.diasonti.autochessweb.controller.api;
 
+import fun.diasonti.autochessweb.config.security.data.AppUser;
+import fun.diasonti.autochessweb.controller.exceptions.UnauthorizedException;
+import fun.diasonti.autochessweb.data.form.PlayerForm;
 import fun.diasonti.autochessweb.service.AuthenticationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fun.diasonti.autochessweb.service.PlayerFormService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
-
     private final AuthenticationService authenticationService;
+    private final PlayerFormService playerFormService;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, PlayerFormService playerFormService) {
         this.authenticationService = authenticationService;
+        this.playerFormService = playerFormService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestParam String username, @RequestParam String password) {
+    public void login(@RequestParam String username, @RequestParam String password) {
         try {
             authenticationService.attemptAuthentication(username, password);
-            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new UnauthorizedException(e);
         }
     }
 
+    @GetMapping("/fetch")
+    public PlayerForm fetch(AppUser user) {
+        return playerFormService.getByUsername(user.getUsername());
+    }
+
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout() {
+    public void logout() {
         authenticationService.attemptLogout();
-        return ResponseEntity.ok().build();
     }
 }

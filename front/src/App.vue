@@ -23,15 +23,7 @@
             Header,
         },
         created() {
-            const tokenRefreshInterval = 300 // 300 seconds = 5 minutes
-            setInterval(() => {
-                if (this.$store.getters.tokenGetter) {
-                    this.$store.dispatch('refreshTokenAction')
-                    if (!this.$store.getters.isAuthenticatedGetter) {
-                        this.$router.push({path: '/login', query: {back: 'history'}})
-                    }
-                }
-            }, tokenRefreshInterval * 1000)
+            this.$store.dispatch('fetchSessionAction')
         },
     }
 </script>
