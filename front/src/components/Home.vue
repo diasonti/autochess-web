@@ -94,34 +94,39 @@
             },
         },
         methods: {
-            startSearchListening(searchToken) {
-                this.$sse(baseUrl + apiMap.gameSearchSseStream + '?token=' + searchToken, {format: 'json'}) // or {format: 'plain'}
+            startSearch() {
+                this.axios.post(apiMap.searchStart)
+            },
+            stopSearch() {
+                this.axios.post(apiMap.searchStop)
+            },
+            listen() {
+                this.$sse(baseUrl + apiMap.stream, {format: 'json', withCredentials: true}) // or {format: 'plain'}
                     .then((sse) => {
-                        this.searchStopwatchSeconds = 0
-                        this.searchTitle = 'Searching for an opponent'
-                        this.searchStopwatchInterval = setInterval(() => {
-                            this.searchStopwatchSeconds++
-                            if (this.searchTitle.endsWith('.....')) {
-                                this.searchTitle = 'Searching for an opponent'
-                            } else {
-                                this.searchTitle += '.'
-                            }
-                        }, 1000)
                         // Catch any errors (ie. lost connections, etc.)
                         sse.onError((e) => {
                             console.error('SSE Listening error', e)
-                            this.stopSearch()
                             sse.close()
+                            setTimeout(() => this.listen(), 333)
                         })
 
-                        sse.subscribe('search', (data) => {
-                            console.info('SSE Received a message with event: search', data)
+                        sse.subscribe('search.started', (data) => {
+                            console.info('SSE Received a message with event: search.started', data)
+                            this.handleSearchStarted()
                         })
 
-                        sse.subscribe('game', (data) => {
-                            console.info('SSE Received a message with event: game', data)
-                            this.handleFoundGame(data['gameId'])
-                            sse.close()
+                        sse.subscribe('search.stopped', (data) => {
+                            console.info('SSE Received a message with event: search.stopped', data)
+                            this.handleSearchStopped()
+                        })
+
+                        sse.subscribe('game.found', (data) => {
+                            console.info('SSE Received a message with event: game.found', data)
+                            this.handleGameFound(data['gameId'])
+                        })
+
+                        sse.subscribe('keep.alive', (data) => {
+                            console.info('SSE Received a message with event: keep.alive', data)
                         })
 
                         // Listen for messages without a specified event
@@ -130,31 +135,38 @@
                         })
                     })
                     .catch((error) => {
-                        // When this error is caught, it means the initial connection to the
-                        // events server failed.  No automatic attempts to reconnect will be made.
+                        // When this error is caught, it means the initial connection to the events server failed.
                         console.error('SSE Failed to connect to server', error)
+                        setTimeout(() => this.listen(), 333)
                     })
             },
-            startSearch() {
-                this.axios.get(baseUrl + apiMap.gameSearchGetToken)
-                    .then((response) => {
-                        const searchToken = response.data.token
-                        this.startSearchListening(searchToken)
-                    })
-                    .catch((error) => {
-                        console.error('searchToken error', error)
-                    })
+            handleSearchStarted() {
+                this.searchStopwatchSeconds = 0
+                this.searchTitle = 'Searching for an opponent'
+                this.searchStopwatchInterval = setInterval(() => {
+                    this.searchStopwatchSeconds++
+                    if (this.searchTitle.endsWith('.....')) {
+                        this.searchTitle = 'Searching for an opponent'
+                    } else {
+                        this.searchTitle += '.'
+                    }
+                }, 700)
             },
-            stopSearch() {
+            handleSearchStopped() {
                 clearInterval(this.searchStopwatchInterval)
                 this.searchStopwatchInterval = null
             },
-            handleFoundGame(gameId) {
-                this.stopSearch()
+            handleGameFound(gameId) {
                 console.log('Game found ', gameId)
+                this.handleSearchStopped()
                 // TODO: Redirect to the game component
             },
             alert: (message) => alert(message),
+        },
+        beforeRouteEnter(to, from, next) {
+            next(vm => {
+                vm.listen()
+            })
         },
         filters: {
             time: function (value) {
