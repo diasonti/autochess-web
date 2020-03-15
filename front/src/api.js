@@ -21,3 +21,5 @@ axios.interceptors.response.use((response) => {
 
 Vue.use(VueAxios, axios)
 Vue.use(VueSSE)
+
+export default axios

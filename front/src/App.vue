@@ -22,9 +22,6 @@
             Footer,
             Header,
         },
-        created() {
-            this.$store.dispatch('fetchSessionAction')
-        },
     }
 </script>
 
