@@ -20,7 +20,7 @@
 
 <script>
     import Piece from './Piece'
-    import {baseUrl} from '../config'
+    import {baseUrl} from '../core/config'
     import {piecesMap} from '../utils/chessPieces'
     import {cellNumbers} from '../utils/cellNumbers'
 

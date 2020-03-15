@@ -68,7 +68,7 @@
 </template>
 
 <script>
-    import {apiMap, baseUrl} from '../config'
+    import {apiMap, baseUrl} from '../core/config'
 
     export default {
         name: 'Home',

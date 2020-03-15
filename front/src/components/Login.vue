@@ -18,7 +18,7 @@
 </template>
 
 <script>
-    import {apiMap} from '../config'
+    import {apiMap} from '../core/config'
 
     export default {
         name: 'Login',

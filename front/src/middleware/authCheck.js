@@ -1,4 +1,4 @@
-import store from '../store'
+import store from '../core/store'
 
 export default function authCheck({router, from, to, next}) {
 

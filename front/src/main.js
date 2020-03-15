@@ -2,11 +2,11 @@ import Vue from 'vue'
 import App from './App.vue'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import router from './router'
-import store from './store'
-import './api'
-import './filters'
-import './fontawesome'
+import router from './core/router'
+import store from './core/store'
+import './core/api'
+import './core/filters'
+import './core/fontawesome'
 
 window.$ = require('jquery')
 window.JQuery = require('jquery')

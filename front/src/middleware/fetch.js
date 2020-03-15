@@ -1,6 +1,6 @@
-import store from '../store'
-import axios from '../api'
-import {apiMap} from '../config'
+import store from '../core/store'
+import axios from '../core/api'
+import {apiMap} from '../core/config'
 
 export default function fetch({router, from, to, next}) {
     axios.get(apiMap.fetchPlayer)

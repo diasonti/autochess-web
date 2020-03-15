@@ -1,12 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Index from './views/Index'
-import ChessBoard from './components/ChessBoard'
-import Login from './components/Login'
-import Home from './components/Home'
-import fetch from './middleware/fetch'
-import logRoute from './middleware/logRoute'
-import authCheck from './middleware/authCheck'
+import Index from '../views/Index'
+import ChessBoard from '../components/ChessBoard'
+import Login from '../components/Login'
+import Home from '../components/Home'
+import fetch from '../middleware/fetch'
+import logRoute from '../middleware/logRoute'
+import authCheck from '../middleware/authCheck'
 
 Vue.use(Router)
 
