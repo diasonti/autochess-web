@@ -12,11 +12,9 @@
                 <div class="row">
                     <div class="col-sm-6" :class="{'hidden': !searchInProgress}">
                         <h4>Elapsed: {{ searchStopwatchSeconds | time }}</h4>
-                        <p>Estimated: 03:17</p>
                     </div>
                     <div class="col-sm-6 text-right">
-                        <p>12 345 players online</p>
-                        <p>1 234 players in game</p>
+                        <p>{{ playersOnline }} players online</p>
                     </div>
                 </div>
             </div>
@@ -26,7 +24,7 @@
                 <div class="card" style="height: 100%">
                     <div class="card-body">
                         <h5 class="card-title">{{ player.username }}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Rank: {{ 322 }}</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">Rank: {{ player.rank }}</h6>
                     </div>
                 </div>
             </div>
@@ -40,25 +38,25 @@
                                 <th scope="col">Opponent</th>
                                 <th scope="col">Result</th>
                                 <th scope="col">Rank</th>
-                                <th scope="col">ID</th>
+                                <th scope="col">Date</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="(game, index) in gameHistory" :key="index" class="clickable"
+                            <tr v-for="(match, index) in matchHistory" :key="index" class="clickable"
                                 @click="alert('TODO: Show game details page')">
-                                <td>{{ game.opponent }}</td>
-                                <td :class="{'text-success': game.win, 'text-danger': !game.win}">
-                                    {{ game.win }}
+                                <td>{{ match.opponentUsername }}</td>
+                                <td :class="{'text-success': match.winner === match.color, 'text-danger': match.winner !== match.color}">
+                                    {{ match.winner === match.color ? 'Win' : 'Lose' }}
                                 </td>
-                                <td :class="{'text-success': game.win, 'text-danger': !game.win}">
-                                    {{ game.rankDelta > 0 ? '+' + game.rankDelta : game.rankDelta }} ({{ game.rank }})
+                                <td :class="{'text-success': match.rankDelta >= 0, 'text-danger': match.rankDelta < 0}">
+                                    {{ match.rankDelta > 0 ? '+' + match.rankDelta : match.rankDelta }}
                                 </td>
-                                <td>{{ game.id }}</td>
+                                <td>{{ match.finishedAt | localDateTime }}</td>
                             </tr>
                             </tbody>
                         </table>
                         <div class="text-right">
-                            <button class="btn btn-secondary" @click="alert('TODO: Show game history table page')">
+                            <button class="btn btn-secondary" v-show="matchHistoryPage >= 0" @click="loadMoreMatchHistory">
                                 Show more
                             </button>
                         </div>
@@ -79,15 +77,20 @@
                 searchTitle: 'Searching for an opponent',
                 searchStopwatchSeconds: 5000,
                 searchStopwatchInterval: null,
-                gameHistory: [
-                    {id: 21, opponent: 'Mark', win: true, rankDelta: 25, rank: 1225},
-                    {id: 17, opponent: 'Jacob', win: false, rankDelta: -20, rank: 1200},
-                ],
             }
         },
         computed: {
             player() {
                 return this.$store.getters.authenticatedUserGetter
+            },
+            matchHistory() {
+                return this.$store.getters.matchHistoryGetter
+            },
+            matchHistoryPage() {
+                return this.$store.getters.matchHistoryPageGetter
+            },
+            playersOnline() {
+                return this.$store.getters.playersOnlineGetter
             },
             searchInProgress() {
                 return this.searchStopwatchInterval !== null
@@ -101,13 +104,14 @@
                 this.axios.post(apiMap.searchStop)
             },
             listen() {
+                const retryInterval = 1000;
                 this.$sse(baseUrl + apiMap.stream, {format: 'json', withCredentials: true}) // or {format: 'plain'}
                     .then((sse) => {
                         // Catch any errors (ie. lost connections, etc.)
                         sse.onError((e) => {
                             console.error('SSE Listening error', e)
                             sse.close()
-                            setTimeout(() => this.listen(), 333)
+                            setTimeout(() => this.listen(), retryInterval)
                         })
 
                         sse.subscribe('search.started', (data) => {
@@ -126,7 +130,7 @@
                         })
 
                         sse.subscribe('keep.alive', (data) => {
-                            console.info('SSE Received a message with event: keep.alive', data)
+                            // console.info('SSE Received a message with event: keep.alive', data)
                         })
 
                         // Listen for messages without a specified event
@@ -137,7 +141,7 @@
                     .catch((error) => {
                         // When this error is caught, it means the initial connection to the events server failed.
                         console.error('SSE Failed to connect to server', error)
-                        setTimeout(() => this.listen(), 333)
+                        setTimeout(() => this.listen(), retryInterval)
                     })
             },
             handleSearchStarted() {
@@ -150,7 +154,7 @@
                     } else {
                         this.searchTitle += '.'
                     }
-                }, 700)
+                }, 1000)
             },
             handleSearchStopped() {
                 clearInterval(this.searchStopwatchInterval)
@@ -161,35 +165,18 @@
                 this.handleSearchStopped()
                 // TODO: Redirect to the game component
             },
+            loadMoreMatchHistory() {
+                this.$store.dispatch('fetchMatchHistoryAction')
+            },
             alert: (message) => alert(message),
         },
         beforeRouteEnter(to, from, next) {
             next(vm => {
                 vm.listen()
+                if (vm.matchHistoryPage === 0) {
+                    vm.$store.dispatch('fetchMatchHistoryAction')
+                }
             })
-        },
-        filters: {
-            time: function (value) {
-                if (!value || value === 0)
-                    return '00:00'
-                const seconds = parseInt(value)
-                let sec = seconds % 60
-                if (sec < 10)
-                    sec = '0' + sec
-
-                let min = Math.floor(seconds / 60) % 60
-                if (min < 10)
-                    min = '0' + min
-
-                let hr = Math.floor(seconds / 3600)
-                if (hr > 0 && hr < 10)
-                    hr = '0' + hr
-
-                let time = min + ':' + sec
-                if (hr > 0)
-                    time = hr + ':' + time
-                return time
-            },
         },
     }
 </script>

@@ -1,24 +1,22 @@
 package fun.diasonti.autochessweb.controller.api;
 
-import fun.diasonti.autochessweb.config.security.data.AppUser;
 import fun.diasonti.autochessweb.controller.exceptions.UnauthorizedException;
-import fun.diasonti.autochessweb.data.form.PlayerForm;
 import fun.diasonti.autochessweb.service.AuthenticationService;
-import fun.diasonti.autochessweb.service.PlayerFormService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final PlayerFormService playerFormService;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService, PlayerFormService playerFormService) {
+    public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
-        this.playerFormService = playerFormService;
     }
 
     @PostMapping("/login")
@@ -28,11 +26,6 @@ public class AuthenticationController {
         } catch (Exception e) {
             throw new UnauthorizedException(e);
         }
-    }
-
-    @GetMapping("/fetch")
-    public PlayerForm fetch(AppUser user) {
-        return playerFormService.getByUsername(user.getUsername());
     }
 
     @PostMapping("/logout")

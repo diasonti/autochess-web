@@ -22,6 +22,9 @@
             Footer,
             Header,
         },
+        created() {
+            setInterval(() => this.$store.dispatch('fetchPlayersOnline'), 10000);
+        }
     }
 </script>
 

@@ -3,7 +3,7 @@ import axios from '../api'
 import {apiMap} from '../config'
 
 export default function fetch({router, from, to, next}) {
-    axios.get(apiMap.fetch)
+    axios.get(apiMap.fetchPlayer)
         .then((response) => {
             store.commit('fetchSessionMutation', {user: response.data})
         })

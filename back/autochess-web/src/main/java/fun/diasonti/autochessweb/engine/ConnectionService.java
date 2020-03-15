@@ -63,8 +63,12 @@ public class ConnectionService {
         log.debug("Search stopped sent to player {}", user.getUsername());
     }
 
+    public int getActiveConnectionsCount() {
+        return connections.size();
+    }
+
     @Scheduled(fixedDelay = 5000)
-    public void keepConnectionsAlive() {
+    protected void keepConnectionsAlive() {
         connections.values().parallelStream().forEach(emitter -> send(emitter, EVENT_KEEP_ALIVE));
     }
 
