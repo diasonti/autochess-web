@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fun.diasonti.autochessweb.config.security.data.AppUser;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
+import fun.diasonti.autochessweb.data.pojo.ActiveGame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -86,5 +87,14 @@ public class ConnectionService {
         } catch (IOException e) {
             log.error("SSE send error", e);
         }
+    }
+
+    public void sendGamePrepared(ActiveGame game) {
+    }
+
+    public void sendPlacementStarted(ActiveGame game) {
+    }
+
+    public void sendPlacementEnded(ActiveGame game) {
     }
 }

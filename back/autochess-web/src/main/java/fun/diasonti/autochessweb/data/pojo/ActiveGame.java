@@ -1,5 +1,6 @@
 package fun.diasonti.autochessweb.data.pojo;
 
+import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import fun.diasonti.chessengine.data.ChessBoard;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
 public class ActiveGame {
 
     private String id;
+    private ActiveGameState state;
 
     private UserAccountForm whitePlayer;
     private UserAccountForm blackPlayer;
@@ -27,6 +29,18 @@ public class ActiveGame {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public ActiveGameState getState() {
+        return state;
+    }
+
+    public void setState(ActiveGameState state) {
+        this.state = state;
     }
 
     public UserAccountForm getWhitePlayer() {
