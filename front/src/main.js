@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
+import 'normalize.css'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import router from './core/router'
