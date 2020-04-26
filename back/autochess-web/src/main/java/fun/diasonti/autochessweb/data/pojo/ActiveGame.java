@@ -4,7 +4,7 @@ import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import fun.diasonti.chessengine.data.ChessBoard;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,15 +16,13 @@ public class ActiveGame {
     private UserAccountForm whitePlayer;
     private UserAccountForm blackPlayer;
 
-    private String whitePieces;
-    private String blackPieces;
+    private List<MovablePiece> whitePieces;
+    private List<MovablePiece> blackPieces;
 
     private ChessBoard board;
-    private List<ChessMove> moves;
 
     public ActiveGame() {
         this.id = UUID.randomUUID().toString();
-        moves = new LinkedList<>();
     }
 
     public String getId() {
@@ -59,27 +57,35 @@ public class ActiveGame {
         this.blackPlayer = blackPlayer;
     }
 
-    public String getWhitePieces() {
-        return whitePieces;
-    }
-
-    public void setWhitePieces(String whitePieces) {
-        this.whitePieces = whitePieces;
-    }
-
-    public String getBlackPieces() {
-        return blackPieces;
-    }
-
-    public void setBlackPieces(String blackPieces) {
-        this.blackPieces = blackPieces;
-    }
-
     public ChessBoard getBoard() {
         return board;
     }
 
     public void setBoard(ChessBoard board) {
         this.board = board;
+    }
+
+    public List<MovablePiece> getWhitePieces() {
+        return whitePieces;
+    }
+
+    public void setWhitePieces(String pieces) {
+        whitePieces = new ArrayList<>(pieces.length());
+        final char[] chars = pieces.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            whitePieces.add(new MovablePiece(i, chars[i]));
+        }
+    }
+
+    public List<MovablePiece> getBlackPieces() {
+        return blackPieces;
+    }
+
+    public void setBlackPieces(String pieces) {
+        blackPieces = new ArrayList<>(pieces.length());
+        final char[] chars = pieces.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            blackPieces.add(new MovablePiece(i + 5, chars[i]));
+        }
     }
 }

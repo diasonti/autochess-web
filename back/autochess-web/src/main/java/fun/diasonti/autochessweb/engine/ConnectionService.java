@@ -4,8 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fun.diasonti.autochessweb.config.security.data.AppUser;
+import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import fun.diasonti.autochessweb.data.pojo.ActiveGame;
+import fun.diasonti.autochessweb.data.pojo.MovablePiece;
+import fun.diasonti.chessengine.util.BoardUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,11 +19,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Component
 public class ConnectionService {
 
     private static final Logger log = LoggerFactory.getLogger(ConnectionService.class);
+    private static final Executor executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("con-thread-%d").build());
 
     private static final String EVENT_KEEP_ALIVE = "keep.alive";
     private static final String EVENT_SEARCH_STARTED = "search.started";
@@ -46,7 +51,6 @@ public class ConnectionService {
     }
 
     public void sendGameFound(UserAccountForm player1, UserAccountForm player2, String gameId) {
-        final Executor executor = Executors.newFixedThreadPool(2, new ThreadFactoryBuilder().setNameFormat("FoundGame-" + gameId + "-%d").build());
         executor.execute(() -> send(connections.get(player1.getUsername()), EVENT_GAME_FOUND, ImmutableMap.of(DATA_GAME_ID_KEY, gameId)));
         executor.execute(() -> send(connections.get(player2.getUsername()), EVENT_GAME_FOUND, ImmutableMap.of(DATA_GAME_ID_KEY, gameId)));
         log.debug("Game found sent to players {} and {}. Game id: {}", player1.getUsername(), player2.getUsername(), gameId);
@@ -89,12 +93,25 @@ public class ConnectionService {
         }
     }
 
-    public void sendGamePrepared(ActiveGame game) {
+    public void sendGameState(ActiveGame game) {
+        final String event = "state";
+        final ActiveGameState data = game.getState();
+        executor.execute(() -> send(connections.get(game.getWhitePlayer().getUsername()), event, ImmutableMap.of("data", data)));
+        executor.execute(() -> send(connections.get(game.getBlackPlayer().getUsername()), event, ImmutableMap.of("data", data)));
     }
 
-    public void sendPlacementStarted(ActiveGame game) {
+    public void sendBoard(ActiveGame game) {
+        final String event = "board";
+        final String data = BoardUtils.bitboardToFen(game.getBoard());
+        executor.execute(() -> send(connections.get(game.getWhitePlayer().getUsername()), event, ImmutableMap.of("data", data)));
+        executor.execute(() -> send(connections.get(game.getBlackPlayer().getUsername()), event, ImmutableMap.of("data", data)));
     }
 
-    public void sendPlacementEnded(ActiveGame game) {
+    public void sendMovablePieces(ActiveGame game) {
+        final String event = "pieces";
+        final Map<Integer, Character> whiteData = game.getWhitePieces().stream().collect(Collectors.toMap(MovablePiece::getId, MovablePiece::getPiece));
+        final Map<Integer, Character> blackData = game.getBlackPieces().stream().collect(Collectors.toMap(MovablePiece::getId, MovablePiece::getPiece));
+        executor.execute(() -> send(connections.get(game.getWhitePlayer().getUsername()), event, ImmutableMap.of("data", whiteData)));
+        executor.execute(() -> send(connections.get(game.getBlackPlayer().getUsername()), event, ImmutableMap.of("data", blackData)));
     }
 }

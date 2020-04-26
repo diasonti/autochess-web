@@ -1,0 +1,137 @@
+package fun.diasonti.autochessweb.engine.game;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import fun.diasonti.autochessweb.data.enums.ActiveGameState;
+import fun.diasonti.autochessweb.data.form.UserAccountForm;
+import fun.diasonti.autochessweb.data.pojo.ActiveGame;
+import fun.diasonti.autochessweb.data.pojo.MovablePiece;
+import fun.diasonti.autochessweb.engine.ConnectionService;
+import fun.diasonti.chessengine.data.ChessBoard;
+import fun.diasonti.chessengine.data.Color;
+import fun.diasonti.chessengine.data.Move;
+import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
+import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Component
+public class GameService {
+
+    private final static Logger log = LoggerFactory.getLogger(GameService.class);
+    private final static Map<String, ActiveGame> activeGamesById = Collections.synchronizedMap(new HashMap<>());
+    private final static Map<String, ActiveGame> activeGamesByUsername = Collections.synchronizedMap(new HashMap<>());
+    private final static ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("game-thread-%d").build());
+
+    private final ConnectionService connectionService;
+    private final SearchEngine searchEngine;
+    private final MoveEngine moveEngine;
+
+    @Autowired
+    public GameService(ConnectionService connectionService, SearchEngine searchEngine, MoveEngine moveEngine) {
+        this.connectionService = connectionService;
+        this.searchEngine = searchEngine;
+        this.moveEngine = moveEngine;
+    }
+
+    public void attemptMovePiece(String username, int pieceId, int targetCell) {
+        final ActiveGame game = activeGamesByUsername.get(username);
+        if (game == null || game.getState() != ActiveGameState.PLACEMENT)
+            return;
+        MovablePiece movablePiece = null;
+        if (game.getWhitePlayer().getUsername().equals(username)) {
+            movablePiece = game.getWhitePieces().stream().filter(p -> p.getId() == pieceId).findFirst().orElse(null);
+        } else if (game.getBlackPlayer().getUsername().equals(username)) {
+            movablePiece = game.getBlackPieces().stream().filter(p -> p.getId() == pieceId).findFirst().orElse(null);
+        }
+        if (movablePiece != null) {
+            log.debug("Move: {} to {}; gameId: {}", movablePiece.getPosition(), targetCell, game.getId());
+            final Move move = Move.of(movablePiece.getPosition(), targetCell);
+            final ChessBoard boardAfterMove = moveEngine.makeMove(game.getBoard(), move);
+            game.setBoard(boardAfterMove);
+            movablePiece.setPosition(targetCell);
+            connectionService.sendBoard(game);
+        }
+    }
+
+    public String startGameAsync(UserAccountForm player1, UserAccountForm player2) {
+        final String gameId = UUID.randomUUID().toString();
+        executor.execute(() -> {
+            try {
+                doStartGame(gameId, player1, player2);
+            } catch (Exception ignored) {
+            } finally {
+                activeGamesById.remove(gameId);
+                activeGamesByUsername.remove(player1.getUsername());
+                activeGamesByUsername.remove(player2.getUsername());
+            }
+        });
+        return gameId;
+    }
+
+    private void doStartGame(String gameId, UserAccountForm player1, UserAccountForm player2) throws InterruptedException {
+        final ActiveGame game = new ActiveGame();
+
+        log.debug("Game state: {}; gameId: {}", ActiveGameState.INITIALIZATION, gameId);
+        game.setState(ActiveGameState.INITIALIZATION);
+        final List<UserAccountForm> players = Stream.of(player1, player2).collect(Collectors.toList());
+        Collections.shuffle(players);
+        game.setWhitePlayer(players.get(0));
+        game.setBlackPlayer(players.get(1));
+        activeGamesById.put(gameId, game);
+        activeGamesByUsername.put(game.getWhitePlayer().getUsername(), game);
+        activeGamesByUsername.put(game.getBlackPlayer().getUsername(), game);
+        game.setBoard(new ChessBoard());
+        game.setWhitePieces(RandomStringUtils.random(5, "RNBQP"));
+        game.setBlackPieces(RandomStringUtils.random(5, "rnbqp"));
+
+        log.debug("Game state: {}; gameId: {}", ActiveGameState.PRE_PLACEMENT, gameId);
+        game.setState(ActiveGameState.PRE_PLACEMENT);
+        connectionService.sendGameState(game);
+        connectionService.sendMovablePieces(game);
+        Thread.sleep(Duration.ofSeconds(5).toMillis());
+
+        log.debug("Game state: {}; gameId: {}", ActiveGameState.PLACEMENT, gameId);
+        game.setState(ActiveGameState.PLACEMENT);
+        connectionService.sendGameState(game);
+        Thread.sleep(Duration.ofSeconds(25).toMillis());
+
+        log.debug("Game state: {}; gameId: {}", ActiveGameState.GAME, gameId);
+        game.setState(ActiveGameState.GAME);
+        connectionService.sendGameState(game);
+        doAutoGame(game);
+
+        log.debug("Game state: {}; gameId: {}", ActiveGameState.FINISHED, gameId);
+        game.setState(ActiveGameState.FINISHED);
+        flushGameHistory(game);
+    }
+
+    private void doAutoGame(ActiveGame game) throws InterruptedException {
+        final int turnLimit = 10;
+        Color turn = Color.WHITE;
+        for (int i = 0; i < turnLimit; i++) {
+            final int depth = RandomUtils.nextInt(1, 5);
+            ChessBoard board = game.getBoard();
+            final Move move = searchEngine.getBestMove(board, turn, depth);
+            board = moveEngine.makeMove(board, move);
+            game.setBoard(board);
+            turn = turn.getOpposite();
+            connectionService.sendBoard(game);
+            Thread.sleep(Duration.ofSeconds(1).toMillis());
+        }
+    }
+
+    private void flushGameHistory(ActiveGame game) {
+
+    }
+}

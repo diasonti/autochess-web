@@ -1,6 +1,7 @@
 package fun.diasonti.autochessweb.engine;
 
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
+import fun.diasonti.autochessweb.engine.game.GameService;
 import fun.diasonti.autochessweb.service.UserAccountService;
 import fun.diasonti.autochessweb.utils.HashLinkedQueue;
 import org.springframework.beans.factory.annotation.Autowired;
