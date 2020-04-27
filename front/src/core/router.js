@@ -7,6 +7,7 @@ import Home from '../components/Home'
 import fetch from '../middleware/fetch'
 import logRoute from '../middleware/logRoute'
 import authCheck from '../middleware/authCheck'
+import Player from '../views/Player'
 
 Vue.use(Router)
 
@@ -51,6 +52,15 @@ const router = new Router({
             props: true,
             meta: {
                 middleware: [...defaultMiddleware],
+                authenticated: true,
+            },
+        },
+        {
+            path: '/player',
+            name: 'player',
+            component: Player,
+            meta: {
+                middleware: [logRoute],
                 authenticated: true,
             },
         },
