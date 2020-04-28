@@ -21,9 +21,6 @@
         components: {
             Footer,
             Header,
-        },
-        created() {
-            setInterval(() => this.$store.dispatch('fetchPlayersOnline'), 10000);
         }
     }
 </script>
@@ -37,5 +34,9 @@
 
     .hidden {
         visibility: hidden;
+    }
+
+    [v-cloak] {
+        display: none
     }
 </style>

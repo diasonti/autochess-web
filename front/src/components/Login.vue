@@ -39,7 +39,7 @@
                 formData.append('password', this.loginPassword)
                 this.axios.post(apiMap.login, formData)
                     .then((response) => {
-                        this.$store.dispatch('loginSuccessAction', {user: response.data})
+                        this.$store.dispatch('loginSuccessAction')
                         this.handleSuccessLogin()
                     })
                     .catch((error) => {
@@ -52,7 +52,7 @@
                 } else if (this.back) {
                     this.$router.go(this.back)
                 } else {
-                    this.$router.push('/home')
+                    this.$router.push('/player')
                 }
             },
         },

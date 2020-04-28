@@ -9,19 +9,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/game")
-public class GameController {
+@RequestMapping("/api/intent/game")
+public class GameIntentController {
 
     private final GameService gameService;
 
     @Autowired
-    public GameController(GameService gameService) {
+    public GameIntentController(GameService gameService) {
         this.gameService = gameService;
     }
 
     @PostMapping("/move")
-    public void movePiece(AppUser user, @RequestParam int pieceId, @RequestParam int targetCell) {
-        gameService.attemptMovePiece(user.getUsername(), pieceId, targetCell);
+    public void movePiece(AppUser user, @RequestParam int fromCell, @RequestParam int toCell) {
+        gameService.attemptMovePiece(user.getUsername(), fromCell, toCell);
     }
 
 }

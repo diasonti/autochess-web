@@ -1,17 +1,14 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '../views/Index'
-import ChessBoard from '../components/ChessBoard'
 import Login from '../components/Login'
-import Home from '../components/Home'
-import fetch from '../middleware/fetch'
 import logRoute from '../middleware/logRoute'
 import authCheck from '../middleware/authCheck'
 import Player from '../views/Player'
 
 Vue.use(Router)
 
-const defaultMiddleware = [logRoute, fetch, authCheck]
+const defaultMiddleware = [logRoute, authCheck]
 
 const router = new Router({
     mode: 'history',
@@ -37,30 +34,11 @@ const router = new Router({
             },
         },
         {
-            path: '/home',
-            name: 'home',
-            component: Home,
-            meta: {
-                middleware: [...defaultMiddleware],
-                authenticated: true,
-            },
-        },
-        {
-            path: '/game/:gameId',
-            name: 'board',
-            component: ChessBoard,
-            props: true,
-            meta: {
-                middleware: [...defaultMiddleware],
-                authenticated: true,
-            },
-        },
-        {
             path: '/player',
             name: 'player',
             component: Player,
             meta: {
-                middleware: [logRoute],
+                middleware: [...defaultMiddleware],
                 authenticated: true,
             },
         },

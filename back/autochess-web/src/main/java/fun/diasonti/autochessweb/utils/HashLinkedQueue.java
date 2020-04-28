@@ -1,7 +1,6 @@
 package fun.diasonti.autochessweb.utils;
 
 import java.util.*;
-import java.util.function.Predicate;
 
 public class HashLinkedQueue<E> {
 
@@ -34,18 +33,11 @@ public class HashLinkedQueue<E> {
         return true;
     }
 
-    public boolean removeIf(Predicate<E> filter) {
-        Objects.requireNonNull(filter);
-        boolean removed = false;
-        final Iterator<E> each = queue.iterator();
-        while (each.hasNext()) {
-            final E element = each.next();
-            if (filter.test(element)) {
-                each.remove();
-                set.remove(element);
-                removed = true;
-            }
-        }
-        return removed;
+    public E peek(E t) {
+        return set.stream().filter(e -> Objects.equals(e, t)).findFirst().orElse(null);
+    }
+
+    public boolean contains(E object) {
+        return set.contains(object);
     }
 }

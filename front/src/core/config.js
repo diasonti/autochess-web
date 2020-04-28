@@ -7,8 +7,11 @@ const apiMap = {
     fetchPlayer: '/api/fetch/player',
     fetchMatchHistory: '/api/fetch/match',
     stream: '/api/stream',
-    searchStart: '/api/matchmaking/search/start',
-    searchStop: '/api/matchmaking/search/stop',
+
+    fetchState: '/api/fetch/state',
+    searchStart: '/api/intent/menu/search/start',
+    searchStop: '/api/intent/menu/search/stop',
+    moveIntent: '/api/intent/game/move',
 }
 
 export {baseUrl, apiMap}

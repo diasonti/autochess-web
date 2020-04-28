@@ -44,16 +44,22 @@ public class GameService {
         this.moveEngine = moveEngine;
     }
 
-    public void attemptMovePiece(String username, int pieceId, int targetCell) {
+    public ActiveGame findActiveGameByPlayer(String username) {
+        return activeGamesByUsername.get(username);
+    }
+
+    public void attemptMovePiece(String username, int fromCell, int targetCell) {
         final ActiveGame game = activeGamesByUsername.get(username);
         if (game == null || game.getState() != ActiveGameState.PLACEMENT)
             return;
         MovablePiece movablePiece = null;
+        List<MovablePiece> playersPieces = Collections.emptyList();
         if (game.getWhitePlayer().getUsername().equals(username)) {
-            movablePiece = game.getWhitePieces().stream().filter(p -> p.getId() == pieceId).findFirst().orElse(null);
+            playersPieces = game.getWhitePieces();
         } else if (game.getBlackPlayer().getUsername().equals(username)) {
-            movablePiece = game.getBlackPieces().stream().filter(p -> p.getId() == pieceId).findFirst().orElse(null);
+            playersPieces = game.getBlackPieces();
         }
+        movablePiece = playersPieces.stream().filter(p -> p.getPosition() == fromCell).findFirst().orElse(null);
         if (movablePiece != null) {
             log.debug("Move: {} to {}; gameId: {}", movablePiece.getPosition(), targetCell, game.getId());
             final Move move = Move.of(movablePiece.getPosition(), targetCell);
