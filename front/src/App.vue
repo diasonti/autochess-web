@@ -31,12 +31,4 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
-
-    .hidden {
-        visibility: hidden;
-    }
-
-    [v-cloak] {
-        display: none
-    }
 </style>

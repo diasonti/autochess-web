@@ -2,9 +2,7 @@
     <div>
         <h3>Current stage: {{stage}}</h3>
         <h3>Your color: {{color}}</h3>
-        <Board :fen="board" :on-piece-move="attemptMove" :interactive-color="color"/>
-        <input class="form-control" type="text" v-model="board">
-        <p>{{state}}</p>
+        <Board :fen="board" :on-piece-move="attemptMove" :interactive-color="color" class="m-auto"/>
     </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-    <div ondragstart="return false" ondrop="return false">
+    <div id="root" ondragstart="return false" ondrop="return false">
         <table>
             <tr v-for="row in 8" :key="row">
                 <td v-for="col in 8" :key="col" class="chess-board-cell" :data-number="cellNumber(row, col)"
@@ -153,6 +153,9 @@
 </script>
 
 <style scoped>
+    #root {
+        width: fit-content;
+    }
     table {
         background: #f0d9b5;
     }

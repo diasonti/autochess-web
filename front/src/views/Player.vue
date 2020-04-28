@@ -1,12 +1,18 @@
 <template>
     <div v-cloak>
-        <div v-if="status === 'MENU'">
-            <Menu :state="menuState" />
-        </div>
+        <transition name="fade" mode="out-in" appear>
+            <div v-if="status === 'LOADING'" :key="status">
+                <FullScreenPreloader/>
+            </div>
 
-        <div v-if="status === 'GAME'">
-            <Game :state="gameState" />
-        </div>
+            <div v-if="status === 'MENU'" :key="status">
+                <Menu :state="menuState"/>
+            </div>
+
+            <div v-if="status === 'GAME'" :key="status">
+                <Game :state="gameState"/>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -14,28 +20,28 @@
     import Menu from '../components/Menu'
     import Game from '../components/Game'
     import {apiMap} from '../core/config'
+    import FullScreenPreloader from '../components/FullScreenPreloader'
 
     export default {
         name: 'Player',
-        components: {Game, Menu},
+        components: {FullScreenPreloader, Game, Menu},
         data() {
             return {
-                // status: 'MENU',
-                status: 'GAME',
+                status: 'LOADING',
                 menuState: {
                     profile: {
-                        username: 'PlayerBish',
+                        username: 'username',
                         rank: '1234',
                         matchHistory: [
                             {
-                                opponentUsername: 'OpponentBish',
+                                opponentUsername: 'opponent1',
                                 color: 'WHITE',
                                 winner: 'WHITE',
                                 rankDelta: 15,
                                 finishedAt: [1, 2, 3, 4, 5, 6],
                             },
                             {
-                                opponentUsername: 'otherBish',
+                                opponentUsername: 'opponent2',
                                 color: 'WHITE',
                                 winner: 'BLACK',
                                 rankDelta: -20,
@@ -60,7 +66,7 @@
                         { id: 3, piece: 'K', position: 61 },
                     ],
                     opponentProfile: {
-                        username: 'OpponentBish',
+                        username: 'opponent1',
                         rank: '1234',
                     }
                 },

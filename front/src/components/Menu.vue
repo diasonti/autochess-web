@@ -1,7 +1,5 @@
 <template>
     <div class="container-fluid">
-
-
         <div class="row mt-3">
             <div class="col-sm-4">
                 <button class="btn btn-primary find-game-button" v-if="!search.inProgress" @click="startSearch">
@@ -9,17 +7,16 @@
                 </button>
                 <button class="btn btn-danger find-game-button" v-else @click="stopSearch">Stop search</button>
             </div>
-            <div class="col-sm-8">
-                <h3 :class="{'hidden': !search.inProgress}">Searching for an opponent</h3>
-                <div class="row">
-                    <div class="col-sm-6" :class="{'hidden': !search.inProgress}">
-                        <h4>Elapsed: {{ currentSecond - search.startedAt | time }}</h4>
-                    </div>
-                    <div class="col-sm-6 text-right">
-                        <p>{{ statistics.playersOnline }} players online</p>
+            <transition name="fade" mode="out-in">
+                <div class="col-sm-8" v-show="search.inProgress">
+                    <h3>Searching for an opponent</h3>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h4>Elapsed: {{ currentSecond - search.startedAt | time }}</h4>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </transition>
         </div>
 
 
