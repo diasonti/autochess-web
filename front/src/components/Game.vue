@@ -1,7 +1,10 @@
 <template>
     <div>
-        <Board :fen="board" :on-piece-move="attemptMove"/>
+        <h3>Current stage: {{stage}}</h3>
+        <h3>Your color: {{color}}</h3>
+        <Board :fen="board" :on-piece-move="attemptMove" :interactive-color="color"/>
         <input class="form-control" type="text" v-model="board">
+        <p>{{state}}</p>
     </div>
 </template>
 
@@ -19,6 +22,9 @@
             },
             board() {
                 return this.state.board
+            },
+            color() {
+                return this.state.color ? this.state.color.toLowerCase() : null
             },
             movablePieces() {
                 return this.state.movablePieces

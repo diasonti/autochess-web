@@ -14,6 +14,10 @@ public class Move {
         this.score = 0;
     }
 
+    public static Move fromIndex(int from, int to) {
+        return of(1L << from, 1L << to);
+    }
+
     public static Move of(long from, long to) {
         return new Move(from, to);
     }

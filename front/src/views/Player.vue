@@ -78,19 +78,10 @@
                         // console.log(response.data)
                         const status = response.data.status
                         if (status === 'MENU') {
-                            this.menuState = {
-                                profile: response.data.profile,
-                                search: response.data.search,
-                                statistics: response.data.statistics,
-                            }
+                            this.menuState = response.data
                         }
                         if (status === 'GAME') {
-                            this.gameState = {
-                                stage: response.data.stage,
-                                board: response.data.board,
-                                movablePieces: response.data.movablePieces,
-                                opponentProfile: response.data.opponentProfile,
-                            }
+                            this.gameState = response.data
                         }
                         if (status === 'ANONYMOUS') {
                             clearInterval(this.fetchStateInterval)

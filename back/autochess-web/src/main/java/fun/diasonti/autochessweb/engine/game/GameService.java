@@ -5,7 +5,6 @@ import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import fun.diasonti.autochessweb.data.pojo.ActiveGame;
 import fun.diasonti.autochessweb.data.pojo.MovablePiece;
-import fun.diasonti.autochessweb.engine.ConnectionService;
 import fun.diasonti.chessengine.data.ChessBoard;
 import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.data.Move;
@@ -33,13 +32,11 @@ public class GameService {
     private final static Map<String, ActiveGame> activeGamesByUsername = Collections.synchronizedMap(new HashMap<>());
     private final static ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("game-thread-%d").build());
 
-    private final ConnectionService connectionService;
     private final SearchEngine searchEngine;
     private final MoveEngine moveEngine;
 
     @Autowired
-    public GameService(ConnectionService connectionService, SearchEngine searchEngine, MoveEngine moveEngine) {
-        this.connectionService = connectionService;
+    public GameService(SearchEngine searchEngine, MoveEngine moveEngine) {
         this.searchEngine = searchEngine;
         this.moveEngine = moveEngine;
     }
@@ -62,11 +59,10 @@ public class GameService {
         movablePiece = playersPieces.stream().filter(p -> p.getPosition() == fromCell).findFirst().orElse(null);
         if (movablePiece != null) {
             log.debug("Move: {} to {}; gameId: {}", movablePiece.getPosition(), targetCell, game.getId());
-            final Move move = Move.of(movablePiece.getPosition(), targetCell);
+            final Move move = Move.fromIndex(movablePiece.getPosition(), targetCell);
             final ChessBoard boardAfterMove = moveEngine.makeMove(game.getBoard(), move);
             game.setBoard(boardAfterMove);
             movablePiece.setPosition(targetCell);
-            connectionService.sendBoard(game);
         }
     }
 
@@ -100,21 +96,18 @@ public class GameService {
         game.setBoard(new ChessBoard());
         game.setWhitePieces(RandomStringUtils.random(5, "RNBQP"));
         game.setBlackPieces(RandomStringUtils.random(5, "rnbqp"));
+        game.setupStartingBoard();
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.PRE_PLACEMENT, gameId);
         game.setState(ActiveGameState.PRE_PLACEMENT);
-        connectionService.sendGameState(game);
-        connectionService.sendMovablePieces(game);
         Thread.sleep(Duration.ofSeconds(5).toMillis());
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.PLACEMENT, gameId);
         game.setState(ActiveGameState.PLACEMENT);
-        connectionService.sendGameState(game);
         Thread.sleep(Duration.ofSeconds(25).toMillis());
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.GAME, gameId);
         game.setState(ActiveGameState.GAME);
-        connectionService.sendGameState(game);
         doAutoGame(game);
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.FINISHED, gameId);
@@ -132,7 +125,6 @@ public class GameService {
             board = moveEngine.makeMove(board, move);
             game.setBoard(board);
             turn = turn.getOpposite();
-            connectionService.sendBoard(game);
             Thread.sleep(Duration.ofSeconds(1).toMillis());
         }
     }

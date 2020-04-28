@@ -20,7 +20,7 @@
     export default {
         name: 'Board',
         components: {Piece},
-        props: ['fen', 'onPieceMove'],
+        props: ['fen', 'onPieceMove', 'interactiveColor'],
         data() {
             return {
                 cells: [
@@ -100,7 +100,8 @@
                 const targetCellNumber = e.target.dataset.number
                 const targetCell = this.cells[targetCellNumber]
                 if (this.draggedNumber === null && targetCell.key !== piecesMap.blank.key) { // Clicked piece, no dragged
-                    this.draggedNumber = targetCellNumber
+                    if (targetCell.color === this.interactiveColor)
+                        this.draggedNumber = targetCellNumber
                 } else if (this.draggedNumber === targetCellNumber) { // Clicked dragged piece
                     this.draggedNumber = null
                 } else if (targetCell.class['available-move-to']) { // Clicked cell with valid move
@@ -128,7 +129,8 @@
                                 cell.class['available-move-to'] = false
                                 cell.class['available-move-from'] = false
                             } else { // Not empty cell -> can drag this
-                                cell.class['available-move-from'] = true
+                                if (cell.color === this.interactiveColor)
+                                    cell.class['available-move-from'] = true
                             }
                         }
                         this.$set(this.cells, i, cell)

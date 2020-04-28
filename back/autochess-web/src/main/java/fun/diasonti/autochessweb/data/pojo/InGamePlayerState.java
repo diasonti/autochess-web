@@ -3,6 +3,7 @@ package fun.diasonti.autochessweb.data.pojo;
 import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.enums.PlayerStateStatus;
 import fun.diasonti.autochessweb.data.view.PlayerView;
+import fun.diasonti.chessengine.data.Color;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class InGamePlayerState extends PlayerState {
 
     private ActiveGameState stage;
     private String board;
+    private Color color;
     private List<MovablePiece> movablePieces;
     private PlayerView opponentProfile;
 
@@ -31,6 +33,14 @@ public class InGamePlayerState extends PlayerState {
 
     public void setBoard(String board) {
         this.board = board;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public List<MovablePiece> getMovablePieces() {

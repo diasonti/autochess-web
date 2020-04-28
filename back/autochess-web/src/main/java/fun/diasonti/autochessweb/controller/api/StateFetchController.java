@@ -5,6 +5,7 @@ import fun.diasonti.autochessweb.data.pojo.*;
 import fun.diasonti.autochessweb.engine.MatchmakingService;
 import fun.diasonti.autochessweb.engine.game.GameService;
 import fun.diasonti.autochessweb.service.PlayerViewService;
+import fun.diasonti.chessengine.data.Color;
 import fun.diasonti.chessengine.util.BoardUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,9 +52,11 @@ public class StateFetchController {
         state.setStage(game.getState());
         state.setBoard(BoardUtils.bitboardToFen(game.getBoard()));
         if (game.getWhitePlayer().getUsername().equals(user.getUsername())) {
+            state.setColor(Color.WHITE);
             state.setMovablePieces(game.getWhitePieces());
             state.setOpponentProfile(playerViewService.getByUsername(game.getBlackPlayer().getUsername()));
         } else {
+            state.setColor(Color.BLACK);
             state.setMovablePieces(game.getBlackPieces());
             state.setOpponentProfile(playerViewService.getByUsername(game.getWhitePlayer().getUsername()));
         }

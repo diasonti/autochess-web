@@ -3,6 +3,7 @@ package fun.diasonti.autochessweb.data.pojo;
 import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.form.UserAccountForm;
 import fun.diasonti.chessengine.data.ChessBoard;
+import fun.diasonti.chessengine.util.BoardUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,5 +88,20 @@ public class ActiveGame {
         for (int i = 0; i < chars.length; i++) {
             blackPieces.add(new MovablePiece(i + 5, chars[i]));
         }
+    }
+
+    public void setupStartingBoard() {
+        final StringBuilder black = new StringBuilder();
+        for (int i = 0; i < blackPieces.size(); i++) {
+            blackPieces.get(i).setPosition(i);
+            black.append(blackPieces.get(i).getPiece());
+        }
+        final StringBuilder white = new StringBuilder();
+        for (int i = 0; i < whitePieces.size(); i++) {
+            whitePieces.get(i).setPosition(63 - i);
+            white.insert(0, whitePieces.get(i).getPiece());
+        }
+        final String startingFen = black + "3/8/8/8/8/8/8/3" + white;
+        board = BoardUtils.fenToBitboard(startingFen);
     }
 }
