@@ -27,6 +27,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         final UserAccount userAccount = userAccountRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+        if (!userAccount.isEmailConfirmed()) {
+            throw new UsernameNotFoundException("Email is not confirmed");
+        }
         final UserAccountForm userAccountForm = userAccountMapper.entityToForm(userAccount);
         return new AppUser(userAccountForm);
     }

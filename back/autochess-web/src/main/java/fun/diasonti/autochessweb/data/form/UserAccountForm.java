@@ -8,6 +8,8 @@ public class UserAccountForm extends BaseForm {
 
     private String username;
 
+    private String email;
+
     private String password;
 
     public String getUsername() {
@@ -16,6 +18,14 @@ public class UserAccountForm extends BaseForm {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -28,24 +38,28 @@ public class UserAccountForm extends BaseForm {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UserAccountForm)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof UserAccountForm))
+            return false;
+        if (!super.equals(o))
+            return false;
         UserAccountForm that = (UserAccountForm) o;
-        return Objects.equals(username, that.username);
+        return Objects.equals(username, that.username) &&
+                Objects.equals(email, that.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), username);
+        return Objects.hash(super.hashCode(), username, email);
     }
 
     @Override
     public String toString() {
         return "UserAccountForm{" +
                 "username='" + username + '\'' +
+                ", email='" + email + '\'' +
                 ", password=[PROTECTED]" +
                 '}';
     }
-
 }

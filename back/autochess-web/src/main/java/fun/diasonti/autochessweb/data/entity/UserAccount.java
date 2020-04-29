@@ -13,6 +13,15 @@ public class UserAccount extends BaseEntity {
     @Column(name = "username", unique = true, nullable = false, updatable = false)
     private String username;
 
+    @Column(name = "email", unique = true, nullable = false, updatable = false)
+    private String email;
+
+    @Column(name = "email_confirmed", nullable = false)
+    private boolean emailConfirmed;
+
+    @Column(name = "email_confirmation_token", nullable = false)
+    private String emailConfirmationToken;
+
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -30,6 +39,30 @@ public class UserAccount extends BaseEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public boolean isEmailConfirmed() {
+        return emailConfirmed;
+    }
+
+    public void setEmailConfirmed(boolean emailConfirmed) {
+        this.emailConfirmed = emailConfirmed;
+    }
+
+    public String getEmailConfirmationToken() {
+        return emailConfirmationToken;
+    }
+
+    public void setEmailConfirmationToken(String emailConfirmationToken) {
+        this.emailConfirmationToken = emailConfirmationToken;
     }
 
     public String getPassword() {

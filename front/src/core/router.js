@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '../views/Index'
-import Login from '../components/Login'
+import Login from '../views/Login'
+import Player from '../views/Player'
 import logRoute from '../middleware/logRoute'
 import authCheck from '../middleware/authCheck'
-import Player from '../views/Player'
+import Registration from '../views/Registration'
 
 Vue.use(Router)
 
@@ -20,7 +21,6 @@ const router = new Router({
             component: Index,
             meta: {
                 middleware: [...defaultMiddleware],
-                anonymous: true,
             },
         },
         {
@@ -28,6 +28,16 @@ const router = new Router({
             name: 'login',
             component: Login,
             props: (route) => ({query: route.query.back}),
+            meta: {
+                middleware: [...defaultMiddleware],
+                anonymous: true,
+            },
+        },
+        {
+            path: '/registration',
+            name: 'registration',
+            component: Registration,
+            props: (route) => ({confirmationEmail: route.query.confirmationEmail, token: route.query.token}),
             meta: {
                 middleware: [...defaultMiddleware],
                 anonymous: true,

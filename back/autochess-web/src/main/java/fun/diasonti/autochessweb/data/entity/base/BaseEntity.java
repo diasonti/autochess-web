@@ -45,4 +45,8 @@ public abstract class BaseEntity {
             return super.hashCode();
         return Objects.hash(id);
     }
+
+    public interface IdProjection {
+        Long getId();
+    }
 }

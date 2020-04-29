@@ -1,9 +1,9 @@
 <template>
     <div id="app">
         <Header/>
-        <main class="container-fluid mt-4">
+        <main class="container-fluid px-0 mt-4">
             <div class="row">
-                <div class="col-sm-9 m-auto">
+                <div class="col-sm-9 mx-auto">
                     <router-view/>
                 </div>
             </div>

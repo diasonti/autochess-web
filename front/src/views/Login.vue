@@ -1,20 +1,32 @@
 <template>
-    <form @submit="submitLogin">
-        <div class="alert alert-danger" role="alert" v-if="$store.getters.authErrorGetter">
-            Invalid username or password
+    <div class="container-fluid">
+        <div class="col-sm-8 px-0 mx-auto card">
+            <div class="card-header text-center">
+                <strong>Sign in</strong>
+            </div>
+            <div class="card-body">
+                <form @submit="submitLogin">
+                    <div class="alert alert-danger" role="alert" v-if="$store.getters.authErrorGetter">
+                        Invalid username or password
+                    </div>
+                    <div class="form-group">
+                        <label for="loginUsernameInput" class="mb-1"><strong>Username</strong></label>
+                        <input type="text" class="form-control" id="loginUsernameInput" placeholder="Enter username"
+                               v-model="loginUsername">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPasswordInput" class="mb-1"><strong>Password</strong></label>
+                        <input type="password" class="form-control" id="loginPasswordInput" placeholder="Enter password"
+                               v-model="loginPassword">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+                <p class="mt-3 mb-0 text-center">
+                    Don't have an account? <router-link to="/registration">Sign up</router-link>
+                </p>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="loginUsernameInput">Username</label>
-            <input type="text" class="form-control" id="loginUsernameInput" placeholder="Enter username"
-                   v-model="loginUsername">
-        </div>
-        <div class="form-group">
-            <label for="loginPasswordInput">Password</label>
-            <input type="password" class="form-control" id="loginPasswordInput" placeholder="Enter password"
-                   v-model="loginPassword">
-        </div>
-        <button type="submit" class="btn btn-primary">Sign in</button>
-    </form>
+    </div>
 </template>
 
 <script>
