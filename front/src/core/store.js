@@ -47,6 +47,7 @@ const actions = {
         Vue.axios.post(apiMap.logout)
             .then((response) => {
                 context.commit('logOutMutation')
+                document.cookie = 'authenticated=false;'
             })
     },
 }
