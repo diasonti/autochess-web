@@ -58,7 +58,7 @@
                     },
                 },
                 gameState: {
-                    stage: 'PLACEMENT',
+                    stage: 'PRE_PLACEMENT',
                     board: 'qrp5/8/8/8/8/8/8/5NBB',
                     movablePieces: [
                         { id: 1, piece: 'B', position: 63 },

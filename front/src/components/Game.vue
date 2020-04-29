@@ -1,18 +1,21 @@
 <template>
     <div>
-        <h3>Current stage: {{stage}}</h3>
-        <h3>Your color: {{color}}</h3>
-        <Board :fen="board" :on-piece-move="attemptMove" :interactive-color="color" class="m-auto"/>
+        <GameHeader :stage="stage" />
+        <div class="alert alert-secondary text-center">
+            <h4 class="m-0">Your color: <strong class="text-capitalize">{{ color }}</strong></h4>
+        </div>
+        <Board :fen="board" :on-piece-move="attemptMove" :interactive-color="color" class="mx-auto"/>
     </div>
 </template>
 
 <script>
     import Board from './Board'
     import {apiMap} from '../core/config'
+    import GameHeader from './GameHeader'
 
     export default {
         name: 'Game',
-        components: {Board},
+        components: {GameHeader, Board},
         props: ['state'],
         computed: {
             stage() {
@@ -35,7 +38,6 @@
             attemptMove(from, to) {
                 if (this.stage !== 'PLACEMENT')
                     return;
-                console.log("attemptMove", from, to)
                 const formData = new FormData()
                 formData.append('fromCell', from)
                 formData.append('toCell', to)
