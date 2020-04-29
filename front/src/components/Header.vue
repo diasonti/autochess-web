@@ -1,7 +1,10 @@
 <template>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <router-link to="/" class="navbar-brand">Autochess</router-link>
+            <router-link to="/" class="navbar-brand">
+                <img src="/img/autochess-logo.png" height="30" class="d-inline-block align-top" alt="">
+                Autochess
+            </router-link>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
