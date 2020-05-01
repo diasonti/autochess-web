@@ -1,6 +1,7 @@
 package fun.diasonti.autochessweb.data.entity;
 
 import fun.diasonti.autochessweb.data.entity.base.BaseEntity;
+import fun.diasonti.autochessweb.data.pojo.ActiveGame;
 import fun.diasonti.chessengine.data.Color;
 
 import javax.persistence.*;
@@ -33,6 +34,9 @@ public class MatchHistory extends BaseEntity {
     @Column(name = "winner")
     @Enumerated(EnumType.STRING)
     private Color winner;
+
+    @Transient
+    private ActiveGame activeGame;
 
     public LocalDateTime getStartedAt() {
         return startedAt;
@@ -88,5 +92,13 @@ public class MatchHistory extends BaseEntity {
 
     public void setWinner(Color winner) {
         this.winner = winner;
+    }
+
+    public ActiveGame getActiveGame() {
+        return activeGame;
+    }
+
+    public void setActiveGame(ActiveGame activeGame) {
+        this.activeGame = activeGame;
     }
 }

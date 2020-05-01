@@ -12,12 +12,13 @@ import fun.diasonti.chessengine.engine.interfaces.MoveEngine;
 import fun.diasonti.chessengine.engine.interfaces.SearchEngine;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,11 +35,13 @@ public class GameService {
 
     private final SearchEngine searchEngine;
     private final MoveEngine moveEngine;
+    private final MatchHistoryService matchHistoryService;
 
     @Autowired
-    public GameService(SearchEngine searchEngine, MoveEngine moveEngine) {
+    public GameService(SearchEngine searchEngine, MoveEngine moveEngine, MatchHistoryService matchHistoryService) {
         this.searchEngine = searchEngine;
         this.moveEngine = moveEngine;
+        this.matchHistoryService = matchHistoryService;
     }
 
     public ActiveGame findActiveGameByPlayer(String username) {
@@ -49,14 +52,16 @@ public class GameService {
         final ActiveGame game = activeGamesByUsername.get(username);
         if (game == null || game.getState() != ActiveGameState.PLACEMENT)
             return;
-        MovablePiece movablePiece = null;
         List<MovablePiece> playersPieces = Collections.emptyList();
         if (game.getWhitePlayer().getUsername().equals(username)) {
             playersPieces = game.getWhitePieces();
         } else if (game.getBlackPlayer().getUsername().equals(username)) {
             playersPieces = game.getBlackPieces();
         }
-        movablePiece = playersPieces.stream().filter(p -> p.getPosition() == fromCell).findFirst().orElse(null);
+        final MovablePiece movablePiece = playersPieces.stream()
+                .filter(p -> p.getPosition() == fromCell)
+                .findFirst()
+                .orElse(null);
         if (movablePiece != null) {
             log.debug("Move: {} to {}; gameId: {}", movablePiece.getPosition(), targetCell, game.getId());
             final Move move = Move.fromIndex(movablePiece.getPosition(), targetCell);
@@ -66,9 +71,9 @@ public class GameService {
         }
     }
 
-    public String startGameAsync(UserAccountForm player1, UserAccountForm player2) {
-        final String gameId = UUID.randomUUID().toString();
+    public void startGameAsync(UserAccountForm player1, UserAccountForm player2) {
         executor.execute(() -> {
+            final String gameId = UUID.randomUUID().toString();
             try {
                 doStartGame(gameId, player1, player2);
             } catch (Exception ignored) {
@@ -78,7 +83,6 @@ public class GameService {
                 activeGamesByUsername.remove(player2.getUsername());
             }
         });
-        return gameId;
     }
 
     private void doStartGame(String gameId, UserAccountForm player1, UserAccountForm player2) throws InterruptedException {
@@ -100,11 +104,12 @@ public class GameService {
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.PRE_PLACEMENT, gameId);
         game.setState(ActiveGameState.PRE_PLACEMENT);
-        Thread.sleep(Duration.ofSeconds(5).toMillis());
+        game.setStartedAt(LocalDateTime.now());
+        Thread.sleep(5 * DateUtils.MILLIS_PER_SECOND);
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.PLACEMENT, gameId);
         game.setState(ActiveGameState.PLACEMENT);
-        Thread.sleep(Duration.ofSeconds(25).toMillis());
+        Thread.sleep(25 * DateUtils.MILLIS_PER_SECOND);
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.GAME, gameId);
         game.setState(ActiveGameState.GAME);
@@ -112,7 +117,8 @@ public class GameService {
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.FINISHED, gameId);
         game.setState(ActiveGameState.FINISHED);
-        flushGameHistory(game);
+        game.setFinishedAt(LocalDateTime.now());
+        matchHistoryService.recordGameHistory(game);
     }
 
     private void doAutoGame(ActiveGame game) throws InterruptedException {
@@ -127,9 +133,5 @@ public class GameService {
             turn = turn.getOpposite();
             Thread.sleep(Duration.ofSeconds(1).toMillis());
         }
-    }
-
-    private void flushGameHistory(ActiveGame game) {
-
     }
 }

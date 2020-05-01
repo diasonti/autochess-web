@@ -3,6 +3,7 @@ package fun.diasonti.autochessweb.data.entity;
 import fun.diasonti.autochessweb.data.entity.base.BaseEntity;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,9 @@ public class UserAccount extends BaseEntity {
     @OneToMany(mappedBy = "blackPlayer")
     @OrderBy("finishedAt DESC")
     private List<MatchHistory> blackMatchHistory;
+
+    @Column(name = "rank")
+    private int rank;
 
     public String getUsername() {
         return username;
@@ -83,5 +87,13 @@ public class UserAccount extends BaseEntity {
         if (blackMatchHistory == null)
             blackMatchHistory = new ArrayList<>();
         return blackMatchHistory;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
     }
 }
