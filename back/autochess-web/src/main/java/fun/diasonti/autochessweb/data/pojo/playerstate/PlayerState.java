@@ -1,4 +1,4 @@
-package fun.diasonti.autochessweb.data.pojo;
+package fun.diasonti.autochessweb.data.pojo.playerstate;
 
 import fun.diasonti.autochessweb.data.enums.PlayerStateStatus;
 

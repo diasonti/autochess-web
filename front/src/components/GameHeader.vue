@@ -1,5 +1,5 @@
 <template>
-    <div class="card">
+    <div class="card" v-if="stage !== 'FINISHED'">
         <transition name="fade" mode="out-in" appear>
             <h5 class="card-header text-center" v-if="stage === 'PRE_PLACEMENT'" :key="stage">
                 <strong>Planning</strong>

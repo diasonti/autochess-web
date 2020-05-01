@@ -1,7 +1,8 @@
-package fun.diasonti.autochessweb.data.pojo;
+package fun.diasonti.autochessweb.data.pojo.playerstate;
 
 import fun.diasonti.autochessweb.data.enums.ActiveGameState;
 import fun.diasonti.autochessweb.data.enums.PlayerStateStatus;
+import fun.diasonti.autochessweb.data.pojo.MovablePiece;
 import fun.diasonti.autochessweb.data.view.PlayerView;
 import fun.diasonti.chessengine.data.Color;
 

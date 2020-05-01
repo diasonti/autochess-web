@@ -1,9 +1,9 @@
 package fun.diasonti.autochessweb.data.entity;
 
 import fun.diasonti.autochessweb.data.entity.base.BaseEntity;
+import org.apache.commons.lang3.ObjectUtils;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,5 +95,21 @@ public class UserAccount extends BaseEntity {
 
     public void setRank(int rank) {
         this.rank = rank;
+    }
+
+    @Transient
+    public MatchHistory getLastFinishedMatch() {
+        MatchHistory whiteMatch = null;
+        MatchHistory blackMatch = null;
+
+        if (!getWhiteMatchHistory().isEmpty())
+            whiteMatch = getWhiteMatchHistory().get(0);
+        if (!getBlackMatchHistory().isEmpty())
+            blackMatch = getBlackMatchHistory().get(0);
+
+        if (whiteMatch == null || blackMatch == null)
+            return ObjectUtils.firstNonNull(whiteMatch, blackMatch);
+
+        return whiteMatch.getFinishedAt().isAfter(blackMatch.getFinishedAt()) ? whiteMatch : blackMatch;
     }
 }

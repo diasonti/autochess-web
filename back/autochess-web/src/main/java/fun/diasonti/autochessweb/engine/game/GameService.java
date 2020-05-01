@@ -116,7 +116,6 @@ public class GameService {
         doAutoGame(game);
 
         log.debug("Game state: {}; gameId: {}", ActiveGameState.FINISHED, gameId);
-        game.setState(ActiveGameState.FINISHED);
         game.setFinishedAt(LocalDateTime.now());
         matchHistoryService.recordGameHistory(game);
     }

@@ -27,7 +27,8 @@
         components: {FullScreenPreloader, Game, Menu},
         data() {
             return {
-                status: 'LOADING',
+                actualStatus: 'LOADING',
+                forcedStatus: null,
                 menuState: {
                     profile: {
                         username: 'username',
@@ -58,8 +59,10 @@
                     },
                 },
                 gameState: {
-                    stage: 'PRE_PLACEMENT',
+                    default: true,
+                    stage: 'GAME',
                     board: 'qrp5/8/8/8/8/8/8/5NBB',
+                    color: 'WHITE',
                     movablePieces: [
                         { id: 1, piece: 'B', position: 63 },
                         { id: 2, piece: 'B', position: 62 },
@@ -68,10 +71,20 @@
                     opponentProfile: {
                         username: 'opponent1',
                         rank: '1234',
-                    }
+                    },
+                    result: {
+                        result: 'TIE',
+                        rankBefore: 1000,
+                        rankAfter: 1015
+                    },
                 },
                 fetchStateInterval: null,
                 fetchStateInProgress: false,
+            }
+        },
+        computed: {
+            status() {
+                return this.forcedStatus ? this.forcedStatus : this.actualStatus
             }
         },
         methods: {
@@ -81,20 +94,36 @@
                 this.fetchStateInProgress = true
                 this.axios.get(apiMap.fetchState)
                     .then((response) => {
-                        // console.log(response.data)
-                        const status = response.data.status
+                        console.log(response.data)
+                        let status = response.data.status
                         if (status === 'MENU') {
                             this.menuState = response.data
+                            if (response.data.finishedGame) {
+                                if (this.forcedStatus !== 'MENU')
+                                    this.forcedStatus = 'GAME'
+                                this.gameState = {...this.gameState,
+                                    stage: 'FINISHED',
+                                    result: response.data.finishedGame,
+                                    backToMenu: this.backToMenuHandler,
+                                }
+                            } else {
+                                this.forcedStatus = null
+                            }
+                            if (response.data.search.inProgress) {
+                                this.forcedStatus = null
+                            }
                         }
                         if (status === 'GAME') {
                             this.gameState = response.data
+                            this.forcedStatus = null
                         }
                         if (status === 'ANONYMOUS') {
-                            clearInterval(this.fetchStateInterval)
                             this.$router.replace('login')
-                            this.$store.replace('login')
+                            clearInterval(this.fetchStateInterval)
+                            this.forcedStatus = null
+                            return
                         }
-                        this.status = status
+                        this.actualStatus = status
                     })
                     .catch((error) => {
                         console.error('fetchState error', error)
@@ -102,6 +131,9 @@
                     .finally(() => {
                         this.fetchStateInProgress = false
                     })
+            },
+            backToMenuHandler() {
+                this.forcedStatus = 'MENU'
             },
         },
         mounted() {
