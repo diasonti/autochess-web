@@ -123,15 +123,20 @@ public class GameService {
 
     private void doAutoGame(ActiveGame game) throws InterruptedException {
         final int turnLimit = 10;
-        Color turn = Color.WHITE;
+        final long turnDuration = 3 * DateUtils.MILLIS_PER_SECOND;
+
+        Color currentTurn = Color.WHITE;
         for (int i = 0; i < turnLimit; i++) {
+            final long timeAtStartOfSearch = System.currentTimeMillis();
             final int depth = RandomUtils.nextInt(1, 5);
-            ChessBoard board = game.getBoard();
-            final Move move = searchEngine.getBestMove(board, turn, depth);
-            board = moveEngine.makeMove(board, move);
-            game.setBoard(board);
-            turn = turn.getOpposite();
-            Thread.sleep(Duration.ofSeconds(1).toMillis());
+            final ChessBoard boardBeforeMove = game.getBoard();
+            final Move move = searchEngine.getBestMove(boardBeforeMove, currentTurn, depth);
+            final long timeSpentOnSearch = System.currentTimeMillis() - timeAtStartOfSearch;
+            final long timeUntilTurnEnd = turnDuration - timeSpentOnSearch;
+            if (timeUntilTurnEnd > 0)
+                Thread.sleep(timeUntilTurnEnd);
+            game.setBoard(moveEngine.makeMove(boardBeforeMove, move));
+            currentTurn = currentTurn.getOpposite();
         }
     }
 }
