@@ -4,11 +4,11 @@ import fun.diasonti.autochessweb.data.entity.MatchHistory;
 import fun.diasonti.autochessweb.data.entity.UserAccount;
 import fun.diasonti.autochessweb.repository.MatchHistoryRepository;
 import fun.diasonti.autochessweb.repository.UserAccountRepository;
+import fun.diasonti.autochessweb.utils.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class PlayerRankService {
 
         final List<MatchHistory> whiteMatches = matchHistoryRepository.findByWhitePlayerOrderByFinishedAt(player);
         final List<MatchHistory> blackMatches = matchHistoryRepository.findByBlackPlayerOrderByFinishedAt(player);
-        final List<MatchHistory> allMatches = sortedMerge(whiteMatches, blackMatches);
+        final List<MatchHistory> allMatches = ListUtils.sortingMerge(whiteMatches, blackMatches, Comparator.comparing(MatchHistory::getFinishedAt));
 
         int rank = 0;
         for (MatchHistory match : allMatches) {
@@ -60,13 +60,4 @@ public class PlayerRankService {
 
         player.setRank(rank);
     }
-
-    private List<MatchHistory> sortedMerge(List<MatchHistory> whiteMatches, List<MatchHistory> blackMatches) {
-        final List<MatchHistory> mergedList = new ArrayList<>(whiteMatches.size() + blackMatches.size());
-        mergedList.addAll(whiteMatches);
-        mergedList.addAll(blackMatches);
-        mergedList.sort(Comparator.comparing(MatchHistory::getFinishedAt));
-        return mergedList;
-    }
-
 }

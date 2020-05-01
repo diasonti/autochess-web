@@ -18,10 +18,12 @@ import java.time.temporal.ChronoUnit;
 public class PlayerViewService {
 
     private final UserAccountRepository userAccountRepository;
+    private final MatchViewService matchViewService;
 
     @Autowired
-    public PlayerViewService(UserAccountRepository userAccountRepository) {
+    public PlayerViewService(UserAccountRepository userAccountRepository, MatchViewService matchViewService) {
         this.userAccountRepository = userAccountRepository;
+        this.matchViewService = matchViewService;
     }
 
     @Transactional(readOnly = true)
@@ -31,6 +33,7 @@ public class PlayerViewService {
                     final PlayerView view = new PlayerView();
                     view.setUsername(userAccount.getUsername());
                     view.setRank(userAccount.getRank());
+                    view.setMatchHistory(matchViewService.getMatchHistory(username, 0));
                     return view;
                 }).orElse(null);
     }
