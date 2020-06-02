@@ -3,7 +3,7 @@ import Vue from 'vue'
 const ensureTwoDigits = (value) => value < 10 ? '0'.concat(value) : value
 
 Vue.filter('time', (value) => {
-    if (!value || value === 0)
+    if (!value || value <= 0)
         return '00:00'
     const seconds = parseInt(value)
     let sec = seconds % 60
